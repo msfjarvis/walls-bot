@@ -1,12 +1,14 @@
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
 }
 
 plugins {
     kotlin("jvm") version "1.3.21"
     id("org.jlleitschuh.gradle.ktlint") version "4.1.0"
+    id("com.github.johnrengelman.shadow") version "5.0.0"
 }
 
 allprojects {
