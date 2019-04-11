@@ -72,6 +72,47 @@ fun main() {
                     })
                 }
             }
+            command("pic") { bot, update, args ->
+                val allFiles = File(searchDir).listFiles().filter { file ->
+                    file.nameWithoutExtension.startsWith(args.joinToString("_"))
+                }
+                if (allFiles.isEmpty()) {
+                    update.message?.let { message ->
+                        bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                        bot.sendMessage(
+                                chatId = message.chat.id,
+                                text = "No files found for \'${args.joinToString(" ")}\'",
+                                replyToMessageId = message.messageId
+                        )
+                        return@command
+                    }
+                }
+                val randIdx = Random.nextInt(0, allFiles.size)
+                val fileToSend = allFiles[randIdx]
+                if (fileToSend != null) {
+                    if (debug) println("foundFile: ${fileToSend.nameWithoutExtension}")
+                    update.message?.let { message ->
+                        bot.sendChatAction(chatId = message.chat.id, action = ChatAction.UPLOAD_PHOTO)
+                        val msg = bot.sendPhoto(
+                                chatId = message.chat.id,
+                                photo = "$baseUrl/${fileToSend.name}",
+                                caption = "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})",
+                                parseMode = ParseMode.MARKDOWN,
+                                replyToMessageId = message.messageId
+                        )
+                        msg.fold({ },{
+                            if (debug) println(it.exception.toString())
+                            bot.sendChatAction(chatId = message.chat.id, action = ChatAction.UPLOAD_DOCUMENT)
+                            bot.sendDocument(
+                                    chatId = message.chat.id,
+                                    document = fileToSend,
+                                    caption = "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})",
+                                    replyToMessageId = message.messageId
+                            )
+                        })
+                    }
+                }
+            }
         }
     }
     bot.startPolling()
