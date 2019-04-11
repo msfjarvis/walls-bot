@@ -55,7 +55,7 @@ fun main() {
                     bot.sendChatAction(chatId = message.chat.id, action = ChatAction.UPLOAD_PHOTO)
                     val msg = bot.sendPhoto(
                             chatId = message.chat.id,
-                            photo = "$baseUrl/${fileToSend.name}",
+                            photo = fileToSend,
                             caption = "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})",
                             parseMode = ParseMode.MARKDOWN,
                             replyToMessageId = message.messageId
@@ -67,6 +67,7 @@ fun main() {
                                 chatId = message.chat.id,
                                 document = fileToSend,
                                 caption = "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})",
+                                parseMode = ParseMode.MARKDOWN,
                                 replyToMessageId = message.messageId
                         )
                     })
@@ -107,6 +108,7 @@ fun main() {
                                     chatId = message.chat.id,
                                     document = fileToSend,
                                     caption = "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})",
+                                    parseMode = ParseMode.MARKDOWN,
                                     replyToMessageId = message.messageId
                             )
                         })
