@@ -3,6 +3,7 @@ package me.msfjarvis.wallsbot
 import me.ivmg.telegram.bot
 import me.ivmg.telegram.dispatch
 import me.ivmg.telegram.dispatcher.command
+import me.ivmg.telegram.entities.ChatAction
 import me.ivmg.telegram.entities.ParseMode
 import me.ivmg.telegram.network.fold
 import okhttp3.logging.HttpLoggingInterceptor
@@ -21,6 +22,7 @@ fun main() {
     }
     val searchDir = props.getProperty("searchDir")
     val baseUrl = props.getProperty("baseUrl")
+    val debug = props.getProperty("debug")?.toBoolean() ?: false
     val bot = bot {
         token = props.getProperty("botToken")
         timeout = 30
@@ -34,6 +36,7 @@ fun main() {
                     }
                 }
                 update.message?.let { message ->
+                    bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                     bot.sendMessage(
                             chatId = message.chat.id,
                             replyToMessageId = message.messageId,
@@ -47,25 +50,26 @@ fun main() {
                 val allFiles = File(searchDir).listFiles()
                 val randomInt = Random.nextInt(0, allFiles.size)
                 val fileToSend = allFiles[randomInt]
+                if (debug) println("random: ${fileToSend.nameWithoutExtension}")
                 update.message?.let { message ->
-                    try {
-                        val msg = bot.sendPhoto(
-                                chatId = message.chat.id,
-                                photo = fileToSend,
-                                caption = "[${fileToSend.name}]($baseUrl/${fileToSend.name})",
-                                replyToMessageId = message.messageId
-                        )
-                        msg.fold({ },{
-                            println(it.exception.toString())
-                        })
-                    } catch (ignored: Exception) {
+                    bot.sendChatAction(chatId = message.chat.id, action = ChatAction.UPLOAD_PHOTO)
+                    val msg = bot.sendPhoto(
+                            chatId = message.chat.id,
+                            photo = "$baseUrl/${fileToSend.name}",
+                            caption = "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})",
+                            parseMode = ParseMode.MARKDOWN,
+                            replyToMessageId = message.messageId
+                    )
+                    msg.fold({ },{
+                        if (debug) println(it.exception.toString())
+                        bot.sendChatAction(chatId = message.chat.id, action = ChatAction.UPLOAD_DOCUMENT)
                         bot.sendDocument(
                                 chatId = message.chat.id,
                                 document = fileToSend,
-                                caption = "[${fileToSend.name}]($baseUrl/${fileToSend.name})",
+                                caption = "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})",
                                 replyToMessageId = message.messageId
                         )
-                    }
+                    })
                 }
             }
         }
