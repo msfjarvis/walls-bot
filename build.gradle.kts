@@ -28,7 +28,8 @@ repositories {
 
 dependencies {
     compile("org.jetbrains.kotlin:kotlin-stdlib")
-    compile("io.github.seik.kotlin-telegram-bot:telegram:0.3.7")
+    /* compile("io.github.seik.kotlin-telegram-bot:telegram:0.3.7") */
+    compile(project(":telegram"))
 }
 
 val jar by tasks.getting(Jar::class) {
