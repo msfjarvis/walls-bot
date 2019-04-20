@@ -57,7 +57,7 @@ fun main() {
                 }
                 val units = arrayOf("B", "KB", "MB", "GB", "TB")
                 val digitGroups: Double = Math.floor((Math.log10(diskSpace.toDouble()) / Math.log10(1024.0)))
-                val decimalFormat = DecimalFormat("#,##0.#")
+                val decimalFormat = DecimalFormat("#,##0.##")
                         .format(diskSpace/Math.pow(1024.0, digitGroups)) + " " + units[digitGroups.toInt()]
                 update.message?.let { message ->
 
