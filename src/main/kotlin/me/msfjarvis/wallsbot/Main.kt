@@ -48,14 +48,14 @@ fun main() {
                 }
             }
 
-            command("status") { bot, update, args ->
+            command("status") { bot, update, _ ->
                 val allFiles = File(searchDir).listFiles()
                 var diskSpace: Long = 0
                 for (file in allFiles) {
                     diskSpace += file.length()
                 }
-                val units = arrayOf("B", "kB", "MB", "GB", "TB")
-                val digitGroups: Double = (Math.log10(diskSpace.toDouble()) / Math.log10(1024.0))
+                val units = arrayOf("B", "KB", "MB", "GB", "TB")
+                val digitGroups: Double = Math.floor((Math.log10(diskSpace.toDouble()) / Math.log10(1024.0)))
                 val decimalFormat = DecimalFormat("#,##0.#")
                         .format(diskSpace/Math.pow(1024.0, digitGroups)) + " " + units[digitGroups.toInt()]
                 update.message?.let { message ->
