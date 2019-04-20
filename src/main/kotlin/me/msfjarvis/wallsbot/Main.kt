@@ -48,7 +48,7 @@ fun main() {
                 }
             }
 
-            command("status") { bot, update, _ ->
+            command("status") { bot, update ->
                 val allFiles = File(searchDir).listFiles()
                 var diskSpace: Long = 0
                 for (file in allFiles) {
