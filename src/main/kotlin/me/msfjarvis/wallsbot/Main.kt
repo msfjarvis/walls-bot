@@ -24,7 +24,7 @@ fun main() {
     val searchDir = props.getProperty("searchDir")
     val baseUrl = props.getProperty("baseUrl")
     val debug = props.getProperty("debug")?.toBoolean() ?: false
-    val ownerId = props.getProperty("botOwner").toDoubleOrNull()
+    val ownerId = props.getProperty("botOwner").toLongOrNull()
     val bot = bot {
         token = props.getProperty("botToken")
         timeout = 30
@@ -50,6 +50,21 @@ fun main() {
             }
 
             command("status") { bot, update ->
+                if (ownerId != null) {
+                    update.message?.let { message ->
+                        val messageFrom: Long = message.from?.id ?: 0
+                        println("Message from $messageFrom, Owner ID is $ownerId")
+                        if (messageFrom != ownerId) {
+                            bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                            bot.sendMessage(
+                                    chatId = message.chat.id,
+                                    text = "Unauthorized!",
+                                    replyToMessageId = message.messageId
+                            )
+                            return@command
+                        }
+                    }
+                }
                 val allFiles = File(searchDir).listFiles()
                 var diskSpace: Long = 0
                 for (file in allFiles) {
