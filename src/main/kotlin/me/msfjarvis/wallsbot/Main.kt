@@ -24,6 +24,7 @@ fun main() {
     val searchDir = props.getProperty("searchDir")
     val baseUrl = props.getProperty("baseUrl")
     val debug = props.getProperty("debug")?.toBoolean() ?: false
+    val ownerId = props.getProperty("botOwner").toDoubleOrNull()
     val bot = bot {
         token = props.getProperty("botToken")
         timeout = 30
@@ -48,7 +49,7 @@ fun main() {
                 }
             }
 
-            command("status") { bot, update, _ ->
+            command("status") { bot, update ->
                 val allFiles = File(searchDir).listFiles()
                 var diskSpace: Long = 0
                 for (file in allFiles) {
@@ -68,6 +69,7 @@ fun main() {
                     )
                 }
             }
+
             command("random") { bot, update ->
                 val allFiles = File(searchDir).listFiles()
                 val randomInt = Random.nextInt(0, allFiles.size)
@@ -95,6 +97,7 @@ fun main() {
                     })
                 }
             }
+
             command("pic") { bot, update, args ->
                 val allFiles = File(searchDir).listFiles().filter { file ->
                     file.nameWithoutExtension.startsWith(args.joinToString("_"))
