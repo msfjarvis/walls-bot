@@ -6,7 +6,7 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.3.21"
+    kotlin("jvm") version "1.3.30"
     id("org.jlleitschuh.gradle.ktlint") version "4.1.0"
     id("com.github.johnrengelman.shadow") version "5.0.0"
 }
@@ -28,7 +28,6 @@ repositories {
 
 dependencies {
     compile("org.jetbrains.kotlin:kotlin-stdlib")
-    /* compile("io.github.seik.kotlin-telegram-bot:telegram:0.3.7") */
     compile(project(":telegram"))
 }
 
