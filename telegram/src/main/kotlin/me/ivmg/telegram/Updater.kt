@@ -28,7 +28,7 @@ class Updater {
             }
 
             val lastUpdate = try {
-                items.last({ it is Update }) as Update
+                items.last { it is Update } as Update
             } catch (e: NoSuchElementException) {
                 continue
             }
