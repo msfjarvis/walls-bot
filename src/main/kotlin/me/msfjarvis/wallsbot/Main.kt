@@ -10,7 +10,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import java.io.File
 import java.io.FileInputStream
 import java.text.DecimalFormat
-import java.util.*
+import java.util.Properties
 import kotlin.random.Random
 
 fun main() {
@@ -73,9 +73,8 @@ fun main() {
                 val units = arrayOf("B", "KB", "MB", "GB", "TB")
                 val digitGroups: Double = Math.floor((Math.log10(diskSpace.toDouble()) / Math.log10(1024.0)))
                 val decimalFormat = DecimalFormat("#,##0.##")
-                        .format(diskSpace/Math.pow(1024.0, digitGroups)) + " " + units[digitGroups.toInt()]
+                        .format(diskSpace / Math.pow(1024.0, digitGroups)) + " " + units[digitGroups.toInt()]
                 update.message?.let { message ->
-
                     bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                     bot.sendMessage(
                             chatId = message.chat.id,
@@ -99,7 +98,7 @@ fun main() {
                             parseMode = ParseMode.MARKDOWN,
                             replyToMessageId = message.messageId
                     )
-                    msg.fold({ },{
+                    msg.fold({ }, {
                         if (debug) println(it.exception.toString())
                         bot.sendChatAction(chatId = message.chat.id, action = ChatAction.UPLOAD_DOCUMENT)
                         bot.sendDocument(
@@ -141,7 +140,7 @@ fun main() {
                                 parseMode = ParseMode.MARKDOWN,
                                 replyToMessageId = message.messageId
                         )
-                        msg.fold({ },{
+                        msg.fold({ }, {
                             if (debug) println(it.exception.toString())
                             bot.sendChatAction(chatId = message.chat.id, action = ChatAction.UPLOAD_DOCUMENT)
                             bot.sendDocument(
