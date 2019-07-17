@@ -6,7 +6,7 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.3.31"
+    kotlin("jvm") version "1.3.41"
     id("org.jlleitschuh.gradle.ktlint") version "4.1.0"
     id("com.github.johnrengelman.shadow") version "5.0.0"
 }
@@ -39,7 +39,7 @@ val jar by tasks.getting(Jar::class) {
 
 tasks {
     named<Wrapper>("wrapper") {
-        gradleVersion = "5.4.1"
+        gradleVersion = "5.5.1"
         distributionType = Wrapper.DistributionType.ALL
     }
 }
