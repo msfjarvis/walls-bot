@@ -7,27 +7,14 @@ import me.ivmg.telegram.entities.ChatAction
 import me.ivmg.telegram.entities.ParseMode
 import okhttp3.logging.HttpLoggingInterceptor
 import java.io.File
-import java.io.FileInputStream
 import java.text.DecimalFormat
-import java.util.Properties
-import kotlin.collections.HashSet
 import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.pow
 import kotlin.random.Random
 
 fun main() {
-    val props = Properties()
-    val configFile = File("config.prop")
-    if (configFile.exists()) {
-        props.load(FileInputStream(File("config.prop")))
-    } else {
-        throw IllegalArgumentException("Missing config.prop!")
-    }
-    val searchDir = props.getProperty("searchDir")
-    val baseUrl = props.getProperty("baseUrl")
-    val debug = props.getProperty("debug")?.toBoolean() ?: false
-    val ownerId = props.getProperty("botOwner").toLongOrNull()
+    val props = AppProps()
     val bot = bot {
         token = props.getProperty("botToken")
         timeout = 30
@@ -35,9 +22,9 @@ fun main() {
         dispatch {
             command("search") { bot, update, args ->
                 val foundFiles = HashSet<String>()
-                File(searchDir).listFiles().forEach { file ->
+                File(props.searchDir).listFiles().forEach { file ->
                     if (file.nameWithoutExtension.startsWith(args.joinToString())) {
-                        foundFiles.add("[${file.name}]($baseUrl/${file.name})")
+                        foundFiles.add("[${file.name}](${props.baseUrl}/${file.name})")
                     }
                 }
                 update.message?.let { message ->
@@ -53,11 +40,11 @@ fun main() {
             }
 
             command("status") { bot, update ->
-                if (ownerId != null) {
+                if (props.ownerId != null) {
                     update.message?.let { message ->
                         val messageFrom: Long = message.from?.id ?: 0
-                        println("Message from $messageFrom, Owner ID is $ownerId")
-                        if (messageFrom != ownerId) {
+                        println("Message from $messageFrom, Owner ID is $props.ownerId")
+                        if (messageFrom != props.ownerId) {
                             bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                             bot.sendMessage(
                                     chatId = message.chat.id,
@@ -68,7 +55,7 @@ fun main() {
                         }
                     }
                 }
-                val allFiles = File(searchDir).listFiles()
+                val allFiles = File(props.searchDir).listFiles()
                 var diskSpace: Long = 0
                 for (file in allFiles) {
                     diskSpace += file.length()
@@ -88,17 +75,17 @@ fun main() {
             }
 
             command("random") { bot, update ->
-                val allFiles = File(searchDir).listFiles()
+                val allFiles = File(props.searchDir).listFiles()
                 val randomInt = Random.nextInt(0, allFiles.size)
                 val fileToSend = allFiles[randomInt]
-                if (debug) println("random: ${fileToSend.nameWithoutExtension}")
+                if (props.debug) println("random: ${fileToSend.nameWithoutExtension}")
                 update.message?.let { message ->
-                    bot.sendPictureSafe(message.chat.id, baseUrl, fileToSend, message.messageId)
+                    bot.sendPictureSafe(message.chat.id, props.baseUrl, fileToSend, message.messageId)
                 }
             }
 
             command("pic") { bot, update, args ->
-                val allFiles = File(searchDir).listFiles().filter { file ->
+                val allFiles = File(props.searchDir).listFiles().filter { file ->
                     file.nameWithoutExtension.startsWith(args.joinToString("_"))
                 }
                 if (allFiles.isEmpty()) {
@@ -115,9 +102,9 @@ fun main() {
                 val randIdx = Random.nextInt(0, allFiles.size)
                 val fileToSend = allFiles[randIdx]
                 if (fileToSend != null) {
-                    if (debug) println("foundFile: ${fileToSend.nameWithoutExtension}")
+                    if (props.debug) println("foundFile: ${fileToSend.nameWithoutExtension}")
                     update.message?.let { message ->
-                        bot.sendPictureSafe(message.chat.id, baseUrl, fileToSend, message.messageId)
+                        bot.sendPictureSafe(message.chat.id, props.baseUrl, fileToSend, message.messageId)
                     }
                 }
             }

@@ -6,7 +6,6 @@ import me.ivmg.telegram.entities.ParseMode
 import me.ivmg.telegram.network.fold
 import java.io.File
 
-
 fun Bot.sendPictureSafe(
         chatId: Long,
         baseUrl: String,
