@@ -11,6 +11,9 @@ import java.io.File
 import java.io.FileInputStream
 import java.text.DecimalFormat
 import java.util.Properties
+import kotlin.math.floor
+import kotlin.math.log10
+import kotlin.math.pow
 import kotlin.random.Random
 
 fun main() {
@@ -71,9 +74,9 @@ fun main() {
                     diskSpace += file.length()
                 }
                 val units = arrayOf("B", "KB", "MB", "GB", "TB")
-                val digitGroups: Double = Math.floor((Math.log10(diskSpace.toDouble()) / Math.log10(1024.0)))
+                val digitGroups: Double = floor((log10(diskSpace.toDouble()) / log10(1024.0)))
                 val decimalFormat = DecimalFormat("#,##0.##")
-                        .format(diskSpace / Math.pow(1024.0, digitGroups)) + " " + units[digitGroups.toInt()]
+                        .format(diskSpace / 1024.0.pow(digitGroups)) + " " + units[digitGroups.toInt()]
                 update.message?.let { message ->
                     bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                     bot.sendMessage(
