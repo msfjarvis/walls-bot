@@ -44,11 +44,7 @@ tasks {
     }
     withType<Jar> {
         manifest {
-            attributes(
-                mapOf(
-                    "Main-Class" to application.mainClassName
-                )
-            )
+            attributes["Main-Class"] = application.mainClassName
         }
     }
 }
