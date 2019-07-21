@@ -20,10 +20,10 @@ class AppProps : Properties() {
             throw IllegalArgumentException("Missing config.prop!")
         }
 
-        baseUrl = getProperty("baseUrl")
-        botToken = getProperty("botToken")
-        databaseFile = getProperty("databaseFile")
+        baseUrl = requireNotEmpty(getProperty("baseUrl"))
+        botToken = requireNotEmpty(getProperty("botToken"))
+        databaseFile = requireNotEmpty(getProperty("databaseFile"))
         ownerId = getProperty("botOwner").toLongOrNull()
-        searchDir = getProperty("searchDir")
+        searchDir = requireNotEmpty(getProperty("searchDir"))
     }
 }

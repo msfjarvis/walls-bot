@@ -11,7 +11,13 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
-@ExperimentalStdlibApi
+
+fun requireNotEmpty(str: String) : String {
+    return if (str.isNotBlank()) str else {
+        throw IllegalArgumentException("Required value was empty")
+    }
+}
+
 fun Bot.sendPictureSafe(
         repository: ObjectRepository<CachedFile>,
         chatId: Long,
