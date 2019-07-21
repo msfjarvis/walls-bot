@@ -8,7 +8,6 @@ class AppProps : Properties() {
 
     val searchDir: String
     val baseUrl: String
-    val debug: Boolean
     val ownerId: Long?
 
     init {
@@ -21,7 +20,6 @@ class AppProps : Properties() {
 
         searchDir = getProperty("searchDir")
         baseUrl = getProperty("baseUrl")
-        debug = getProperty("debug")?.toBoolean() ?: false
         ownerId = getProperty("botOwner").toLongOrNull()
     }
 }

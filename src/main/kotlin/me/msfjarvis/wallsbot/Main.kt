@@ -78,7 +78,6 @@ fun main() {
                 val allFiles = File(props.searchDir).listFiles()
                 val randomInt = Random.nextInt(0, allFiles.size)
                 val fileToSend = allFiles[randomInt]
-                if (props.debug) println("random: ${fileToSend.nameWithoutExtension}")
                 update.message?.let { message ->
                     bot.sendPictureSafe(message.chat.id, props.baseUrl, fileToSend, message.messageId)
                 }
@@ -102,7 +101,6 @@ fun main() {
                 val randIdx = Random.nextInt(0, allFiles.size)
                 val fileToSend = allFiles[randIdx]
                 if (fileToSend != null) {
-                    if (props.debug) println("foundFile: ${fileToSend.nameWithoutExtension}")
                     update.message?.let { message ->
                         bot.sendPictureSafe(message.chat.id, props.baseUrl, fileToSend, message.messageId)
                     }
