@@ -8,6 +8,7 @@ class AppProps : Properties() {
 
     val baseUrl: String
     val botToken: String
+    val databaseFile: String
     val ownerId: Long?
     val searchDir: String
 
@@ -21,6 +22,7 @@ class AppProps : Properties() {
 
         baseUrl = getProperty("baseUrl")
         botToken = getProperty("botToken")
+        databaseFile = getProperty("databaseFile")
         ownerId = getProperty("botOwner").toLongOrNull()
         searchDir = getProperty("searchDir")
     }

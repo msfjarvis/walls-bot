@@ -6,6 +6,7 @@ import me.ivmg.telegram.dispatcher.command
 import me.ivmg.telegram.entities.ChatAction
 import me.ivmg.telegram.entities.ParseMode
 import okhttp3.logging.HttpLoggingInterceptor
+import org.dizitart.kno2.nitrite
 import java.io.File
 import java.text.DecimalFormat
 import kotlin.math.floor
@@ -15,6 +16,14 @@ import kotlin.random.Random
 
 fun main() {
     val props = AppProps()
+    val db = nitrite {
+        file = File(props.databaseFile)
+        autoCommitBufferSize = 2048
+        compress = true
+        autoCompact = false
+    }
+    val repository = db.getRepository(CachedFile::class.java)
+    println("repo_items.size=${repository.find().size()}")
     val bot = bot {
         token = props.botToken
         timeout = 30
@@ -79,7 +88,7 @@ fun main() {
                 val randomInt = Random.nextInt(0, allFiles.size)
                 val fileToSend = allFiles[randomInt]
                 update.message?.let { message ->
-                    bot.sendPictureSafe(message.chat.id, props.baseUrl, fileToSend, message.messageId)
+                    bot.sendPictureSafe(repository, message.chat.id, props.baseUrl, fileToSend, message.messageId)
                 }
             }
 
@@ -102,7 +111,7 @@ fun main() {
                 val fileToSend = allFiles[randIdx]
                 if (fileToSend != null) {
                     update.message?.let { message ->
-                        bot.sendPictureSafe(message.chat.id, props.baseUrl, fileToSend, message.messageId)
+                        bot.sendPictureSafe(repository, message.chat.id, props.baseUrl, fileToSend, message.messageId)
                     }
                 }
             }
