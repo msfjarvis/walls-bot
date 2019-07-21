@@ -22,7 +22,7 @@ fun main() {
         compress = true
         autoCompact = false
     }
-    val repository = db.getRepository(CachedFile::class.java)
+    val repository = db.getRepository(props.botToken, CachedFile::class.java)
     println("repo_items.size=${repository.find().size()}")
     val bot = bot {
         token = props.botToken
