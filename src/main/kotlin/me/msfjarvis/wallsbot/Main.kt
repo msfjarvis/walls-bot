@@ -16,7 +16,7 @@ import kotlin.random.Random
 fun main() {
     val props = AppProps()
     val bot = bot {
-        token = props.getProperty("botToken")
+        token = props.botToken
         timeout = 30
         logLevel = HttpLoggingInterceptor.Level.BASIC
         dispatch {
