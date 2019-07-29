@@ -9,7 +9,6 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.3.41"
-    id("org.jlleitschuh.gradle.ktlint") version "4.1.0"
     id("com.github.johnrengelman.shadow") version "5.0.0"
     application
 }
