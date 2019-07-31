@@ -119,6 +119,17 @@ class WallsBot : CoroutineScope {
 
                 command("pic") { bot, update, args ->
                     launch {
+                        if (args.isEmpty()) {
+                            update.message?.let { message ->
+                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                bot.sendMessage(
+                                        chatId = message.chat.id,
+                                        text = "No arguments supplied!",
+                                        replyToMessageId = message.messageId
+                                )
+                            }
+                            return@launch
+                        }
                         val allFiles = File(props.searchDir).listFiles().filter { file ->
                             file.nameWithoutExtension.startsWith(args.joinToString("_"))
                         }
