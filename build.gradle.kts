@@ -32,6 +32,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("io.github.seik.kotlin-telegram-bot:telegram:0.3.8")
     implementation("org.dizitart:potassium-nitrite:3.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0-RC")
 }
 
 application {
