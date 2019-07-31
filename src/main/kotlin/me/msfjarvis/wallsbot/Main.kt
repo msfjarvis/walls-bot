@@ -48,7 +48,7 @@ fun main() {
                 }
             }
 
-            command("status") { bot, update ->
+            command("stats") { bot, update ->
                 if (props.ownerId != null) {
                     update.message?.let { message ->
                         val messageFrom: Long = message.from?.id ?: 0
