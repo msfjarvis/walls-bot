@@ -88,7 +88,14 @@ fun main() {
                 val randomInt = Random.nextInt(0, allFiles.size)
                 val fileToSend = allFiles[randomInt]
                 update.message?.let { message ->
-                    bot.sendPictureSafe(repository, message.chat.id, props.baseUrl, fileToSend, message.messageId)
+                    bot.sendPictureSafe(
+                            repository,
+                            message.chat.id,
+                            props.baseUrl,
+                            fileToSend,
+                            message.messageId,
+                            genericCaption = props.genericCaption
+                    )
                 }
             }
 
@@ -111,7 +118,14 @@ fun main() {
                 val fileToSend = allFiles[randIdx]
                 if (fileToSend != null) {
                     update.message?.let { message ->
-                        bot.sendPictureSafe(repository, message.chat.id, props.baseUrl, fileToSend, message.messageId)
+                        bot.sendPictureSafe(
+                                repository,
+                                message.chat.id,
+                                props.baseUrl,
+                                fileToSend,
+                                message.messageId,
+                                genericCaption = props.genericCaption
+                        )
                     }
                 }
             }

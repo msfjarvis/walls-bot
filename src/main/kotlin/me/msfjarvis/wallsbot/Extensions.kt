@@ -23,14 +23,19 @@ fun Bot.sendPictureSafe(
         chatId: Long,
         baseUrl: String,
         fileToSend: File,
-        replyToMessageId: Long? = null
+        replyToMessageId: Long? = null,
+        genericCaption: Boolean = false
 ) {
     val digest = fileToSend.calculateMD5() ?: ""
+    val caption = if (genericCaption)
+        "[Link]($baseUrl/${fileToSend.name}"
+    else
+        "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})"
     sendChatAction(chatId = chatId, action = ChatAction.UPLOAD_PHOTO)
     val pictureMessage = sendPhoto(
             chatId = chatId,
             photo = "$baseUrl/${fileToSend.name}",
-            caption = "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})",
+            caption = caption,
             parseMode = ParseMode.MARKDOWN,
             replyToMessageId = replyToMessageId
     )
@@ -44,7 +49,7 @@ fun Bot.sendPictureSafe(
         val documentMessage = sendDocument(
                 chatId = chatId,
                 document = fileToSend,
-                caption = "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})",
+                caption = caption,
                 parseMode = ParseMode.MARKDOWN,
                 replyToMessageId = replyToMessageId
         )
