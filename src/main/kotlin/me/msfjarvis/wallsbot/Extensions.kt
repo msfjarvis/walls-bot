@@ -101,6 +101,5 @@ fun File.calculateMD5(): String? {
         } catch (e: IOException) {
             println("Exception on closing MD5 input stream")
         }
-
     }
 }
