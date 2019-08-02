@@ -18,6 +18,9 @@ fun requireNotEmpty(str: String) : String {
     }
 }
 
+val File.sanitizedName
+    get() = nameWithoutExtension.replace('_', ' ')
+
 fun Bot.sendPictureSafe(
         repository: ObjectRepository<CachedFile>,
         chatId: Long,
@@ -32,7 +35,7 @@ fun Bot.sendPictureSafe(
     val caption = if (genericCaption)
         "[Link]($baseUrl/${fileToSend.name}"
     else
-        "[${fileToSend.nameWithoutExtension}]($baseUrl/${fileToSend.name})"
+        "[${fileToSend.sanitizedName}]($baseUrl/${fileToSend.name})"
     sendChatAction(chatId = chatId, action = ChatAction.UPLOAD_PHOTO)
     val pictureMessage = sendPhoto(
             chatId = chatId,
