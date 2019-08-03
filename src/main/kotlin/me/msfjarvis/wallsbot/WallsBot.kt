@@ -43,6 +43,17 @@ class WallsBot : CoroutineScope {
             dispatch {
                 command("search") { bot, update, args ->
                     launch {
+                        if (args.isEmpty()) {
+                            update.message?.let { message ->
+                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                bot.sendMessage(
+                                        chatId = message.chat.id,
+                                        text = "No arguments supplied!",
+                                        replyToMessageId = message.messageId
+                                )
+                            }
+                            return@launch
+                        }
                         val foundFiles = HashSet<String>()
                         File(props.searchDir).listFiles().forEach { file ->
                             if (file.nameWithoutExtension.startsWith(args.joinToString())) {
