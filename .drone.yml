@@ -1,0 +1,25 @@
+---
+kind: pipeline
+name: assemble_test
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build_jdk_8
+  image: msfjarvis/docker-zulu-jdk:alpine-jdk-8
+  commands:
+  - ./gradlew build
+
+- name: build_jdk_11
+  image: msfjarvis/docker-zulu-jdk:alpine-jdk-11
+  commands:
+  - ./gradlew build
+
+- name: build_jdk_12
+  image: msfjarvis/docker-zulu-jdk:alpine-jdk-12
+  commands:
+  - ./gradlew build
+
+...
