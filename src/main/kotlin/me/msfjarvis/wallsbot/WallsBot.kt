@@ -73,12 +73,11 @@ class WallsBot : CoroutineScope {
                     }
                 }
 
-                command("stats") { bot, update ->
-                    launch {
-                        if (props.ownerId != null) {
+                if (props.ownerId != null) {
+                    command("stats") { bot, update ->
+                        launch {
                             update.message?.let { message ->
                                 val messageFrom: Long = message.from?.id ?: 0
-                                println("Message from $messageFrom, Owner ID is $props.ownerId")
                                 if (messageFrom != props.ownerId) {
                                     bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                     bot.sendMessage(
@@ -89,23 +88,23 @@ class WallsBot : CoroutineScope {
                                     return@launch
                                 }
                             }
-                        }
-                        val allFiles = File(props.searchDir).listFiles()
-                        var diskSpace: Long = 0
-                        for (file in allFiles) {
-                            diskSpace += file.length()
-                        }
-                        val units = arrayOf("B", "KB", "MB", "GB", "TB")
-                        val digitGroups: Double = floor((log10(diskSpace.toDouble()) / log10(1024.0)))
-                        val decimalFormat = DecimalFormat("#,##0.##")
-                                .format(diskSpace / 1024.0.pow(digitGroups)) + " " + units[digitGroups.toInt()]
-                        update.message?.let { message ->
-                            bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                            bot.sendMessage(
-                                    chatId = message.chat.id,
-                                    text = "Total files : ${allFiles.size} \nDisk space used : $decimalFormat",
-                                    replyToMessageId = message.messageId
-                            )
+                            val allFiles = File(props.searchDir).listFiles()
+                            var diskSpace: Long = 0
+                            for (file in allFiles) {
+                                diskSpace += file.length()
+                            }
+                            val units = arrayOf("B", "KB", "MB", "GB", "TB")
+                            val digitGroups: Double = floor((log10(diskSpace.toDouble()) / log10(1024.0)))
+                            val decimalFormat = DecimalFormat("#,##0.##")
+                                    .format(diskSpace / 1024.0.pow(digitGroups)) + " " + units[digitGroups.toInt()]
+                            update.message?.let { message ->
+                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                bot.sendMessage(
+                                        chatId = message.chat.id,
+                                        text = "Total files : ${allFiles.size} \nDisk space used : $decimalFormat",
+                                        replyToMessageId = message.messageId
+                                )
+                            }
                         }
                     }
                 }
