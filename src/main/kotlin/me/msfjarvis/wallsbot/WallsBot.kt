@@ -3,6 +3,7 @@ package me.msfjarvis.wallsbot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import me.ivmg.telegram.Bot
 import me.ivmg.telegram.bot
@@ -19,6 +20,7 @@ import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.pow
 import kotlin.random.Random
+import kotlin.system.exitProcess
 
 class WallsBot : CoroutineScope {
     override val coroutineContext: CoroutineContext
@@ -167,6 +169,33 @@ class WallsBot : CoroutineScope {
                                         genericCaption = props.genericCaption
                                 )
                             }
+                        }
+                    }
+                }
+
+                if (props.ownerId != null) {
+                    command("quit") { bot, update, _ ->
+                        update.message?.let { message ->
+                            val messageFrom: Long = message.from?.id ?: 0
+                            if (messageFrom != props.ownerId) {
+                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                bot.sendMessage(
+                                        chatId = message.chat.id,
+                                        text = "Unauthorized!",
+                                        replyToMessageId = message.messageId
+                                )
+                                return@command
+                            } else {
+                                bot.sendMessage(
+                                        chatId = message.chat.id,
+                                        text = "Going down!",
+                                        replyToMessageId = message.messageId
+                                )
+                            }
+                            coroutineContext.cancelChildren()
+                            db.commit()
+                            db.close()
+                            exitProcess(0)
                         }
                     }
                 }
