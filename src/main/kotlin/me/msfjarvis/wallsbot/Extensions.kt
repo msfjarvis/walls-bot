@@ -6,13 +6,17 @@ import me.ivmg.telegram.entities.ParseMode
 import me.ivmg.telegram.network.fold
 import org.dizitart.kno2.filters.eq
 import org.dizitart.no2.objects.ObjectRepository
-import java.io.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.InputStream
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
 
-fun requireNotEmpty(str: String) : String {
+fun requireNotEmpty(str: String): String {
     return if (str.isNotBlank()) str else {
         throw IllegalArgumentException("Required value was empty")
     }
@@ -37,30 +41,41 @@ fun Bot.sendPictureSafe(
     else
         "[${fileToSend.sanitizedName}]($baseUrl/${fileToSend.name})"
     sendChatAction(chatId = chatId, action = ChatAction.UPLOAD_PHOTO)
-    val pictureMessage = sendPhoto(
+    sendPhoto(
             chatId = chatId,
             photo = fileId ?: "$baseUrl/${fileToSend.name}",
             caption = caption,
             parseMode = ParseMode.MARKDOWN,
             replyToMessageId = replyToMessageId
-    )
-    pictureMessage.fold({
-        it?.result?.photo?.get(0)?.fileId?.apply {
+    ).fold({ response ->
+        response?.result?.photo?.get(0)?.fileId?.apply {
+            println("Saving photoId: $this")
             if (dbCursor.size() == 0)
                 repository.insert(CachedFile(this, digest))
         }
     }, {
         sendChatAction(chatId = chatId, action = ChatAction.UPLOAD_DOCUMENT)
-        val documentMessage = sendDocument(
-                chatId = chatId,
-                document = fileToSend,
-                caption = caption,
-                parseMode = ParseMode.MARKDOWN,
-                replyToMessageId = replyToMessageId
-        )
-        documentMessage.fold({
-            it?.result?.document?.fileId?.apply {
-                if (repository.find(CachedFile::fileHash eq digest).size() == 0)
+        val documentMessage = if (fileId == null) {
+            sendDocument(
+                    chatId = chatId,
+                    document = fileToSend,
+                    caption = caption,
+                    parseMode = ParseMode.MARKDOWN,
+                    replyToMessageId = replyToMessageId
+            )
+        } else {
+            sendDocument(
+                    chatId = chatId,
+                    fileId = fileId,
+                    caption = caption,
+                    parseMode = ParseMode.MARKDOWN,
+                    replyToMessageId = replyToMessageId
+            )
+        }
+        documentMessage.fold({ response ->
+            response?.result?.document?.fileId?.apply {
+                println("Saving fileId: $this")
+                if (dbCursor.size() == 0)
                     repository.insert(CachedFile(this, digest))
             }
         }, {})
