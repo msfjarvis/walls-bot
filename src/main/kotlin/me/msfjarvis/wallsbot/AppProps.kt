@@ -12,6 +12,7 @@ class AppProps : Properties() {
     val ownerId: Long?
     val searchDir: String
     val genericCaption: Boolean
+    val debug: Boolean
 
     init {
         val configFile = File("config.prop")
@@ -27,5 +28,6 @@ class AppProps : Properties() {
         ownerId = getProperty("botOwner").toLongOrNull()
         searchDir = requireNotEmpty(getProperty("searchDir"))
         genericCaption = getProperty("genericCaption")?.toBoolean() ?: false
+        debug = getProperty("debug")?.toBoolean() ?: true
     }
 }

@@ -41,7 +41,7 @@ class WallsBot : CoroutineScope {
         bot = bot {
             token = props.botToken
             timeout = 30
-            logLevel = HttpLoggingInterceptor.Level.BASIC
+            logLevel = if (props.debug) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
             dispatch {
                 command("search") { bot, update, args ->
                     launch {
