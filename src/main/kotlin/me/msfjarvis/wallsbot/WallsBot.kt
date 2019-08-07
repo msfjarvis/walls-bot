@@ -27,6 +27,7 @@ class WallsBot : CoroutineScope {
         get() = Job() + Dispatchers.IO
 
     private val bot: Bot
+    private var fileList: Array<File> = emptyArray()
 
     init {
         val props = AppProps()
@@ -37,6 +38,7 @@ class WallsBot : CoroutineScope {
             autoCompact = false
         }
         val repository = db.getRepository(props.botToken, CachedFile::class.java)
+        fileList = requireNotNull(File(props.searchDir).listFiles())
         bot = bot {
             token = props.botToken
             timeout = 30
@@ -55,10 +57,10 @@ class WallsBot : CoroutineScope {
                             }
                             return@launch
                         }
-                        val allFiles = File(props.searchDir).listFiles().filter { file ->
+                        val fileList = fileList.filter { file ->
                             file.nameWithoutExtension.startsWith(args.joinToString("_"))
                         }
-                        if (allFiles.isEmpty()) {
+                        if (fileList.isEmpty()) {
                             update.message?.let { message ->
                                 bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                 bot.sendMessage(
@@ -69,19 +71,17 @@ class WallsBot : CoroutineScope {
                                 return@launch
                             }
                         }
-                        val randIdx = Random.nextInt(0, allFiles.size)
-                        val fileToSend = allFiles[randIdx]
-                        if (fileToSend != null) {
-                            update.message?.let { message ->
-                                bot.sendPictureSafe(
-                                        repository,
-                                        message.chat.id,
-                                        props.baseUrl,
-                                        fileToSend,
-                                        message.messageId,
-                                        genericCaption = props.genericCaption
-                                )
-                            }
+                        val randIdx = Random.nextInt(0, fileList.size)
+                        val fileToSend = fileList[randIdx]
+                        update.message?.let { message ->
+                            bot.sendPictureSafe(
+                                    repository,
+                                    message.chat.id,
+                                    props.baseUrl,
+                                    fileToSend,
+                                    message.messageId,
+                                    genericCaption = props.genericCaption
+                            )
                         }
                     }
                 }
@@ -115,9 +115,8 @@ class WallsBot : CoroutineScope {
 
                 command("random") { bot, update ->
                     launch {
-                        val allFiles = File(props.searchDir).listFiles()
-                        val randomInt = Random.nextInt(0, allFiles.size)
-                        val fileToSend = allFiles[randomInt]
+                        val randomInt = Random.nextInt(0, fileList.size)
+                        val fileToSend = fileList[randomInt]
                         update.message?.let { message ->
                             bot.sendPictureSafe(
                                     repository,
@@ -145,7 +144,7 @@ class WallsBot : CoroutineScope {
                             return@launch
                         }
                         val foundFiles = HashSet<String>()
-                        File(props.searchDir).listFiles().forEach { file ->
+                        fileList.forEach { file ->
                             if (file.name.startsWith(args.joinToString("_"))) {
                                 foundFiles.add("[${file.sanitizedName}](${props.baseUrl}/${file.name})")
                             }
@@ -178,9 +177,8 @@ class WallsBot : CoroutineScope {
                                     return@launch
                                 }
                             }
-                            val allFiles = File(props.searchDir).listFiles()
                             var diskSpace: Long = 0
-                            for (file in allFiles) {
+                            for (file in fileList) {
                                 diskSpace += file.length()
                             }
                             val units = arrayOf("B", "KB", "MB", "GB", "TB")
@@ -191,7 +189,7 @@ class WallsBot : CoroutineScope {
                                 bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                 bot.sendMessage(
                                         chatId = message.chat.id,
-                                        text = "Total files : ${allFiles.size} \nDisk space used : $decimalFormat",
+                                        text = "Total files : ${fileList.size} \nDisk space used : $decimalFormat",
                                         replyToMessageId = message.messageId
                                 )
                             }
