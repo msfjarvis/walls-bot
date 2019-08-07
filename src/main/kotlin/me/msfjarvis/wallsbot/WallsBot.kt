@@ -37,7 +37,6 @@ class WallsBot : CoroutineScope {
             autoCompact = false
         }
         val repository = db.getRepository(props.botToken, CachedFile::class.java)
-        println("repo_items.size=${repository.find().size()}")
         bot = bot {
             token = props.botToken
             timeout = 30

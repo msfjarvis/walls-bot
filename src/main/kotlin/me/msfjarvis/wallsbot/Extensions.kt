@@ -49,7 +49,6 @@ fun Bot.sendPictureSafe(
             replyToMessageId = replyToMessageId
     ).fold({ response ->
         response?.result?.photo?.get(0)?.fileId?.apply {
-            println("Saving photoId: $this")
             if (dbCursor.size() == 0)
                 repository.insert(CachedFile(this, digest))
         }
@@ -74,7 +73,6 @@ fun Bot.sendPictureSafe(
         }
         documentMessage.fold({ response ->
             response?.result?.document?.fileId?.apply {
-                println("Saving fileId: $this")
                 if (dbCursor.size() == 0)
                     repository.insert(CachedFile(this, digest))
             }
