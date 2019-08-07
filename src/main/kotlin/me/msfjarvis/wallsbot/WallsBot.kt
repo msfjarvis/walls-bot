@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import me.ivmg.telegram.Bot
 import me.ivmg.telegram.bot
 import me.ivmg.telegram.dispatch
@@ -190,6 +191,21 @@ class WallsBot : CoroutineScope {
                                 bot.sendMessage(
                                         chatId = message.chat.id,
                                         text = "Total files : ${fileList.size} \nDisk space used : $decimalFormat",
+                                        replyToMessageId = message.messageId
+                                )
+                            }
+                        }
+                    }
+
+                    command("update") { bot, update, _ ->
+                        runBlocking(coroutineContext) {
+                            coroutineContext.cancelChildren()
+                            fileList = requireNotNull(File(props.searchDir).listFiles())
+                            update.message?.let { message ->
+                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                bot.sendMessage(
+                                        chatId = message.chat.id,
+                                        text = "Updated files list!",
                                         replyToMessageId = message.messageId
                                 )
                             }
