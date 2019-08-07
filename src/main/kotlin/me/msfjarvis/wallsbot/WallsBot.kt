@@ -146,7 +146,7 @@ class WallsBot : CoroutineScope {
                         }
                         val foundFiles = HashSet<String>()
                         File(props.searchDir).listFiles().forEach { file ->
-                            if (file.nameWithoutExtension.startsWith(args.joinToString())) {
+                            if (file.name.startsWith(args.joinToString("_"))) {
                                 foundFiles.add("[${file.sanitizedName}](${props.baseUrl}/${file.name})")
                             }
                         }
