@@ -58,8 +58,9 @@ class WallsBot : CoroutineScope {
                             }
                             return@launch
                         }
+                        val fileName = args.joinToString("_")
                         val fileList = fileList.filter { file ->
-                            file.nameWithoutExtension.startsWith(args.joinToString("_"))
+                            file.nameWithoutExtension.startsWith(fileName)
                         }
                         if (fileList.isEmpty()) {
                             update.message?.let { message ->
@@ -72,8 +73,12 @@ class WallsBot : CoroutineScope {
                                 return@launch
                             }
                         }
-                        val randIdx = Random.nextInt(0, fileList.size)
-                        val fileToSend = fileList[randIdx]
+                        val exactMatch = fileList.asSequence().filter { it.nameWithoutExtension == fileName }.toList()
+                        val fileToSend = if (exactMatch.size == 1) {
+                            exactMatch[0]
+                        } else {
+                            fileList[Random.nextInt(0, fileList.size)]
+                        }
                         update.message?.let { message ->
                             bot.sendPictureSafe(
                                     repository,
