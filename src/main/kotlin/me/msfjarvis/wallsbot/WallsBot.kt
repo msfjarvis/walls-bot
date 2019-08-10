@@ -59,9 +59,7 @@ class WallsBot : CoroutineScope {
                             return@launch
                         }
                         val fileName = args.joinToString("_")
-                        val fileList = fileList.filter { file ->
-                            file.nameWithoutExtension.startsWith(fileName)
-                        }
+                        val fileList = fileList.filter { it.nameWithoutExtension.startsWith(fileName) }
                         if (fileList.isEmpty()) {
                             update.message?.let { message ->
                                 bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
@@ -146,10 +144,8 @@ class WallsBot : CoroutineScope {
                             return@launch
                         }
                         val foundFiles = HashSet<String>()
-                        fileList.forEach { file ->
-                            if (file.name.startsWith(args.joinToString("_"))) {
-                                foundFiles.add("[${file.sanitizedName}](${props.baseUrl}/${file.name})")
-                            }
+                        fileList.filter { it.name.startsWith(args.joinToString("_")) }.forEach {
+                            foundFiles.add("[${it.sanitizedName}](${props.baseUrl}/${it.name})")
                         }
                         update.message?.let { message ->
                             bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
