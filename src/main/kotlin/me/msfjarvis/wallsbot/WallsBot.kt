@@ -16,6 +16,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.dizitart.kno2.nitrite
 import java.io.File
 import java.text.DecimalFormat
+import java.util.TreeMap
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.floor
 import kotlin.math.log10
@@ -29,9 +30,11 @@ class WallsBot : CoroutineScope {
 
     private val bot: Bot
     private var fileList: Array<File> = emptyArray()
+    private var formattedDiskSize: String = ""
+    private val props: AppProps = AppProps()
+    private var statsMap = TreeMap<String, Int>()
 
     init {
-        val props = AppProps()
         val db = nitrite {
             file = File(props.databaseFile)
             autoCommitBufferSize = 2048
@@ -39,7 +42,7 @@ class WallsBot : CoroutineScope {
             autoCompact = false
         }
         val repository = db.getRepository(props.botToken, CachedFile::class.java)
-        fileList = requireNotNull(File(props.searchDir).listFiles())
+        refreshDiskCache()
         bot = bot {
             token = props.botToken
             timeout = 30
@@ -175,19 +178,16 @@ class WallsBot : CoroutineScope {
                                     return@launch
                                 }
                             }
-                            var diskSpace: Long = 0
-                            for (file in fileList) {
-                                diskSpace += file.length()
+                            var msg = "Stats\n\n"
+                            statsMap.forEach { (name, count) ->
+                                msg += "${name.replace("_", " ")}: $count\n"
                             }
-                            val units = arrayOf("B", "KB", "MB", "GB", "TB")
-                            val digitGroups: Double = floor((log10(diskSpace.toDouble()) / log10(1024.0)))
-                            val decimalFormat = DecimalFormat("#,##0.##")
-                                    .format(diskSpace / 1024.0.pow(digitGroups)) + " " + units[digitGroups.toInt()]
+                            msg += "\n\nTotal files : ${fileList.size} \nDisk space used : $formattedDiskSize"
                             update.message?.let { message ->
                                 bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                 bot.sendMessage(
                                         chatId = message.chat.id,
-                                        text = "Total files : ${fileList.size} \nDisk space used : $decimalFormat",
+                                        text = msg,
                                         replyToMessageId = message.messageId
                                 )
                             }
@@ -197,7 +197,7 @@ class WallsBot : CoroutineScope {
                     command("update") { bot, update, _ ->
                         runBlocking(coroutineContext) {
                             coroutineContext.cancelChildren()
-                            fileList = requireNotNull(File(props.searchDir).listFiles())
+                            refreshDiskCache()
                             update.message?.let { message ->
                                 bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                 bot.sendMessage(
@@ -212,7 +212,29 @@ class WallsBot : CoroutineScope {
             }
         }
     }
+
     fun startPolling() {
         bot.startPolling()
+    }
+
+    private fun refreshDiskCache() {
+        fileList = requireNotNull(File(props.searchDir).listFiles())
+        fileList.forEach {
+            val split = it.nameWithoutExtension.split("_").toTypedArray().toMutableList().apply {
+                removeAt(size -1)
+            }
+            val key = split.joinToString("_")
+            val count = statsMap.getOrDefault(key, 0)
+            statsMap[key] = count + 1
+        }
+        var diskSpace: Long = 0
+        for (file in fileList) {
+            diskSpace += file.length()
+        }
+        val units = arrayOf("B", "KB", "MB", "GB", "TB")
+        val digitGroups: Double = floor((log10(diskSpace.toDouble()) / log10(1024.0)))
+        formattedDiskSize = DecimalFormat("#,##0.##")
+                .format(diskSpace / 1024.0.pow(digitGroups)) + " " + units[digitGroups.toInt()]
+
     }
 }
