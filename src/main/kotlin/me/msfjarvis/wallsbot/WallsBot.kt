@@ -152,13 +152,23 @@ class WallsBot : CoroutineScope {
                         }
                         update.message?.let { message ->
                             bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                            bot.sendMessage(
-                                    chatId = message.chat.id,
-                                    replyToMessageId = message.messageId,
-                                    text = foundFiles.joinToString("\n"),
-                                    parseMode = ParseMode.MARKDOWN,
-                                    disableWebPagePreview = true
-                            )
+                            if (foundFiles.isEmpty()) {
+                                bot.sendMessage(
+                                        chatId = message.chat.id,
+                                        replyToMessageId = message.messageId,
+                                        text = "No results found for '${args.joinToString(" ")}'",
+                                        parseMode = ParseMode.MARKDOWN,
+                                        disableWebPagePreview = true
+                                )
+                            } else {
+                                bot.sendMessage(
+                                        chatId = message.chat.id,
+                                        replyToMessageId = message.messageId,
+                                        text = foundFiles.joinToString("\n"),
+                                        parseMode = ParseMode.MARKDOWN,
+                                        disableWebPagePreview = true
+                                )
+                            }
                         }
                     }
                 }
