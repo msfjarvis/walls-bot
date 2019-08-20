@@ -14,6 +14,7 @@ import me.ivmg.telegram.entities.ChatAction
 import me.ivmg.telegram.entities.ParseMode
 import okhttp3.logging.HttpLoggingInterceptor
 import org.dizitart.kno2.nitrite
+import org.dizitart.no2.objects.ObjectRepository
 import java.io.File
 import java.text.DecimalFormat
 import java.util.TreeMap
@@ -29,6 +30,7 @@ class WallsBot : CoroutineScope {
         get() = Job() + Dispatchers.IO
 
     private val bot: Bot
+    private val repository: ObjectRepository<CachedFile>
     private var fileList: Array<File> = emptyArray()
     private var formattedDiskSize: String = ""
     private val props: AppProps = AppProps()
@@ -41,7 +43,7 @@ class WallsBot : CoroutineScope {
             compress = true
             autoCompact = false
         }
-        val repository = db.getRepository(props.botToken, CachedFile::class.java)
+        repository = db.getRepository(props.botToken, CachedFile::class.java)
         refreshDiskCache()
         bot = bot {
             token = props.botToken
@@ -246,5 +248,17 @@ class WallsBot : CoroutineScope {
         formattedDiskSize = DecimalFormat("#,##0.##")
                 .format(diskSpace / 1024.0.pow(digitGroups)) + " " + units[digitGroups.toInt()]
 
+        // De-duplicate entries, since we can end up with multiple fileIds for the same file
+        // if we request the same file for the first time, concurrently. This cleanup keeps database
+        // size smaller for faster traversals.
+        val knownHashes = HashSet<String>()
+        repository.find().forEach {
+            if (knownHashes.contains(it.fileHash)) {
+                repository.remove(it)
+                println("Removing duplicate fileId ${it.fileId} for ${it.fileHash}")
+            } else {
+                knownHashes.add(it.fileHash)
+            }
+        }
     }
 }
