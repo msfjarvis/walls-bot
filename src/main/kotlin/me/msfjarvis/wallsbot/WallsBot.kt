@@ -231,6 +231,7 @@ class WallsBot : CoroutineScope {
 
     private fun refreshDiskCache() {
         fileList = requireNotNull(File(props.searchDir).listFiles())
+        statsMap.clear()
         fileList.forEach {
             val split = it.nameWithoutExtension.split("_").toTypedArray().toMutableList().apply {
                 removeAt(size -1)
