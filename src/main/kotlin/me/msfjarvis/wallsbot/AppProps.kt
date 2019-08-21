@@ -28,6 +28,6 @@ class AppProps : Properties() {
         ownerId = getProperty("botOwner").toLongOrNull()
         searchDir = requireNotEmpty(getProperty("searchDir"))
         genericCaption = getProperty("genericCaption")?.toBoolean() ?: false
-        debug = getProperty("debug")?.toBoolean() ?: true
+        debug = getProperty("debug")?.toBoolean() ?: false
     }
 }
