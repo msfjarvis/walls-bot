@@ -1,4 +1,5 @@
-# walls-bot
+# walls-bot [![Build Status](https://travis-ci.com/msfjarvis/walls-bot.svg?branch=master)](https://travis-ci.com/msfjarvis/walls-bot)
+
 Telegram bot for my wallpapers collection, in Kotlin
 
 ### To build
