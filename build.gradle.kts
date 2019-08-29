@@ -10,6 +10,7 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.3.50"
     application
+    id("com.github.ben-manes.versions") version "0.22.0"
 }
 
 allprojects {
