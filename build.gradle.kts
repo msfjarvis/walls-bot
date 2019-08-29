@@ -33,7 +33,7 @@ dependencies {
     implementation("com.github.msfjarvis:kotlin-telegram-bot:0.4.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.1.0")
     implementation("org.dizitart:potassium-nitrite:3.2.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0-RC2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0")
 }
 
 application {
