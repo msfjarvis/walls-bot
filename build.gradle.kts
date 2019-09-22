@@ -10,7 +10,7 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.3.50"
     application
-    id("com.github.ben-manes.versions") version "0.22.0"
+    id("com.github.ben-manes.versions") version "0.25.0"
 }
 
 allprojects {
@@ -34,7 +34,7 @@ dependencies {
     implementation("com.github.msfjarvis:kotlin-telegram-bot:0.4.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.1.0")
     implementation("org.dizitart:potassium-nitrite:3.2.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.1")
 }
 
 application {
@@ -44,7 +44,7 @@ application {
 
 tasks {
     named<Wrapper>("wrapper") {
-        gradleVersion = "5.6"
+        gradleVersion = "5.6.2"
         distributionType = Wrapper.DistributionType.ALL
     }
     withType<Jar> {
