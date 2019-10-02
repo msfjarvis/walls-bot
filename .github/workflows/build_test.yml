@@ -1,5 +1,5 @@
 name: Build with Gradle
-on: [push, pull-request]
+on: [push, pull_request]
 jobs:
   gradle:
     strategy:
