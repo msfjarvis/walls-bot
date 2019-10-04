@@ -204,6 +204,32 @@ class WallsBot : CoroutineScope {
                         }
                     }
 
+                    command("dbstats") { bot, update, _ ->
+                        update.message?.let { message ->
+                            val messageFrom: Long = message.from?.id ?: 0
+                            if (messageFrom != props.ownerId) {
+                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                bot.sendMessage(
+                                        chatId = message.chat.id,
+                                        text = "Unauthorized",
+                                        replyToMessageId = message.messageId
+                                )
+                                return@command
+                            } else {
+                                runBlocking {
+                                    coroutineContext.cancelChildren()
+                                    val savedKeysLength: Int = repository.find().size()
+                                    bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                    bot.sendMessage(
+                                            chatId = message.chat.id,
+                                            text = "Total keys in db: $savedKeysLength",
+                                            replyToMessageId = message.messageId
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     command("update") { bot, update, _ ->
                         runBlocking(coroutineContext) {
                             coroutineContext.cancelChildren()
@@ -232,7 +258,7 @@ class WallsBot : CoroutineScope {
         statsMap.clear()
         fileList.forEach {
             val split = it.nameWithoutExtension.split("_").toTypedArray().toMutableList().apply {
-                removeAt(size -1)
+                removeAt(size - 1)
             }
             val key = split.joinToString("_")
             val count = statsMap.getOrDefault(key, 0)
