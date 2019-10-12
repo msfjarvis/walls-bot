@@ -29,21 +29,22 @@ fun Bot.sendPictureSafe(
         repository: ObjectRepository<CachedFile>,
         chatId: Long,
         baseUrl: String,
-        fileToSend: File,
+        fileToSend: Pair<File, String>,
         replyToMessageId: Long? = null,
         genericCaption: Boolean = false
 ) {
-    val digest = fileToSend.calculateMD5() ?: ""
+    val file = fileToSend.first
+    val digest = fileToSend.second
     val dbCursor = repository.find(CachedFile::fileHash eq digest)
     val fileId = dbCursor.firstOrDefault()?.fileId
     val caption = if (genericCaption)
-        "[Link]($baseUrl/${fileToSend.name}"
+        "[Link]($baseUrl/${file.name}"
     else
-        "[${fileToSend.sanitizedName}]($baseUrl/${fileToSend.name})"
+        "[${file.sanitizedName}]($baseUrl/${file.name})"
     sendChatAction(chatId = chatId, action = ChatAction.UPLOAD_PHOTO)
     sendPhoto(
             chatId = chatId,
-            photo = fileId ?: "$baseUrl/${fileToSend.name}",
+            photo = fileId ?: "$baseUrl/${file.name}",
             caption = caption,
             parseMode = ParseMode.MARKDOWN,
             replyToMessageId = replyToMessageId
@@ -57,7 +58,7 @@ fun Bot.sendPictureSafe(
         val documentMessage = if (fileId == null) {
             sendDocument(
                     chatId = chatId,
-                    document = fileToSend,
+                    document = file,
                     caption = caption,
                     parseMode = ParseMode.MARKDOWN,
                     replyToMessageId = replyToMessageId

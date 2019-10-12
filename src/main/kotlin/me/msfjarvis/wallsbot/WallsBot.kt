@@ -29,7 +29,7 @@ class WallsBot : CoroutineScope {
         get() = Job() + Dispatchers.IO
 
     private val bot: Bot
-    private var fileList: Array<File> = emptyArray()
+    private var fileList = HashMap<File, String>()
     private var formattedDiskSize: String = ""
     private val props: AppProps = AppProps()
     private var statsMap = TreeMap<String, Int>()
@@ -62,8 +62,8 @@ class WallsBot : CoroutineScope {
                             return@launch
                         }
                         val fileName = args.joinToString("_")
-                        val fileList = fileList.filter { it.nameWithoutExtension.toLowerCase().startsWith(fileName.toLowerCase()) }
-                        if (fileList.isEmpty()) {
+                        val results = fileList.keys.filter { it.nameWithoutExtension.toLowerCase().startsWith(fileName.toLowerCase()) }
+                        if (results.isEmpty()) {
                             update.message?.let { message ->
                                 bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                 bot.sendMessage(
@@ -74,8 +74,9 @@ class WallsBot : CoroutineScope {
                                 return@launch
                             }
                         }
-                        val exactMatch = fileList.asSequence().filter { it.nameWithoutExtension == fileName }.take(1)
-                        val fileToSend = exactMatch.singleOrNull() ?: fileList[Random.nextInt(0, fileList.size)]
+                        val exactMatch = results.asSequence().filter { it.nameWithoutExtension == fileName }.take(1)
+                        val key = exactMatch.singleOrNull() ?: results[Random.nextInt(0, results.size)]
+                        val fileToSend = Pair(key, fileList[key] ?: throw IllegalArgumentException("Failed to find corresponding hash for $key"))
                         update.message?.let { message ->
                             bot.sendPictureSafe(
                                     repository,
@@ -118,8 +119,9 @@ class WallsBot : CoroutineScope {
 
                 command("random") { bot, update ->
                     launch {
+                        val keys = fileList.keys.toTypedArray()
                         val randomInt = Random.nextInt(0, fileList.size)
-                        val fileToSend = fileList[randomInt]
+                        val fileToSend = Pair(keys[randomInt], fileList[keys[randomInt]] ?: throw IllegalArgumentException("Failed to find corresponding hash for ${keys[randomInt]}"))
                         update.message?.let { message ->
                             bot.sendPictureSafe(
                                     repository,
@@ -147,7 +149,7 @@ class WallsBot : CoroutineScope {
                             return@launch
                         }
                         val foundFiles = HashSet<String>()
-                        fileList.filter { it.name.toLowerCase().startsWith(args.joinToString("_").toLowerCase()) }.forEach {
+                        fileList.keys.filter { it.name.toLowerCase().startsWith(args.joinToString("_").toLowerCase()) }.forEach {
                             foundFiles.add("[${it.sanitizedName}](${props.baseUrl}/${it.name})")
                         }
                         update.message?.let { message ->
@@ -254,9 +256,9 @@ class WallsBot : CoroutineScope {
     }
 
     private fun refreshDiskCache() {
-        fileList = requireNotNull(File(props.searchDir).listFiles())
+        fileList = HashMap(requireNotNull(File(props.searchDir).listFiles()).associate { Pair(it, it.calculateMD5()) })
         statsMap.clear()
-        fileList.forEach {
+        fileList.keys.forEach {
             val split = it.nameWithoutExtension.split("_").toTypedArray().toMutableList().apply {
                 removeAt(size - 1)
             }
@@ -265,7 +267,7 @@ class WallsBot : CoroutineScope {
             statsMap[key] = count + 1
         }
         var diskSpace: Long = 0
-        for (file in fileList) {
+        for (file in fileList.keys) {
             diskSpace += file.length()
         }
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
