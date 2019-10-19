@@ -44,7 +44,7 @@ application {
 
 tasks {
     named<Wrapper>("wrapper") {
-        gradleVersion = "5.6.3"
+        gradleVersion = "6.0-rc-1"
         distributionType = Wrapper.DistributionType.ALL
     }
     withType<Jar> {
