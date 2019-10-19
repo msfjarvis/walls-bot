@@ -1,4 +1,4 @@
-# walls-bot [![GitHub workflow](https://github.com/msfjarvis/walls-bot/workflows/Build%20with%20Gradle/badge.svg)](https://github.com/msfjarvis/walls-bot/actions)
+# walls-bot [![GitHub workflow](https://github.com/msfjarvis/walls-bot/workflows/CI/badge.svg)](https://github.com/msfjarvis/walls-bot/actions)
 
 Telegram bot for my wallpapers collection, in Kotlin
 
