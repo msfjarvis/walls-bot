@@ -1,3 +1,7 @@
+/*
+ * Copyright © 2018-2019 Harsh Shandilya <msfjarvis@gmail.com>. All Rights Reserved.
+ * SPDX-License-Identifier: MIT
+ */
 package me.msfjarvis.wallsbot
 
 import kotlinx.coroutines.CoroutineScope
@@ -245,6 +249,5 @@ class WallsBot : CoroutineScope {
         val digitGroups: Double = floor((log10(diskSpace.toDouble()) / log10(1024.0)))
         formattedDiskSize = DecimalFormat("#,##0.##")
                 .format(diskSpace / 1024.0.pow(digitGroups)) + " " + units[digitGroups.toInt()]
-
     }
 }

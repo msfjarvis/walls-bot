@@ -1,3 +1,7 @@
+/*
+ * Copyright © 2018-2019 Harsh Shandilya <msfjarvis@gmail.com>. All Rights Reserved.
+ * SPDX-License-Identifier: MIT
+ */
 package me.msfjarvis.wallsbot
 
 import me.ivmg.telegram.Bot
@@ -16,7 +20,6 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
-
 fun requireNotEmpty(str: String): String {
     return if (str.isNotBlank()) str else {
         throw IllegalArgumentException("Required value was empty")
@@ -34,12 +37,12 @@ fun Bot.runForOwner(ownerId: Long, message: Message, toRun: Bot.() -> Unit) {
 }
 
 fun Bot.sendPictureSafe(
-        repository: ObjectRepository<CachedFile>,
-        chatId: Long,
-        baseUrl: String,
-        fileToSend: Pair<File, String>,
-        replyToMessageId: Long? = null,
-        genericCaption: Boolean = false
+    repository: ObjectRepository<CachedFile>,
+    chatId: Long,
+    baseUrl: String,
+    fileToSend: Pair<File, String>,
+    replyToMessageId: Long? = null,
+    genericCaption: Boolean = false
 ) {
     val file = fileToSend.first
     val digest = fileToSend.second
