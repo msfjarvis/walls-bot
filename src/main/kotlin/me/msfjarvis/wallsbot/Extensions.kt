@@ -2,6 +2,7 @@ package me.msfjarvis.wallsbot
 
 import me.ivmg.telegram.Bot
 import me.ivmg.telegram.entities.ChatAction
+import me.ivmg.telegram.entities.Message
 import me.ivmg.telegram.entities.ParseMode
 import me.ivmg.telegram.network.fold
 import org.dizitart.kno2.filters.eq
@@ -24,6 +25,13 @@ fun requireNotEmpty(str: String): String {
 
 val File.sanitizedName
     get() = nameWithoutExtension.replace('_', ' ')
+
+fun Bot.runForOwner(ownerId: Long, message: Message, toRun: Bot.() -> Unit) {
+    if (ownerId != message.from?.id) {
+        return
+    }
+    toRun.invoke(this)
+}
 
 fun Bot.sendPictureSafe(
         repository: ObjectRepository<CachedFile>,

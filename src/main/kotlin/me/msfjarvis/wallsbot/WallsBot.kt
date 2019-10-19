@@ -35,6 +35,7 @@ class WallsBot : CoroutineScope {
     private var statsMap = TreeMap<String, Int>()
 
     init {
+        requireNotNull(props.ownerId) { "ownerId must be configured for the bot to function" }
         val db = nitrite {
             file = File(props.databaseFile)
             autoCommitBufferSize = 2048
@@ -50,65 +51,52 @@ class WallsBot : CoroutineScope {
             dispatch {
                 command("pic") { bot, update, args ->
                     launch {
-                        if (args.isEmpty()) {
-                            update.message?.let { message ->
-                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                                bot.sendMessage(
-                                        chatId = message.chat.id,
-                                        text = "No arguments supplied!",
-                                        replyToMessageId = message.messageId
-                                )
-                            }
-                            return@launch
-                        }
-                        val fileName = args.joinToString("_")
-                        val results = fileList.keys.filter { it.nameWithoutExtension.toLowerCase().startsWith(fileName.toLowerCase()) }
-                        if (results.isEmpty()) {
-                            update.message?.let { message ->
-                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                                bot.sendMessage(
-                                        chatId = message.chat.id,
-                                        text = "No files found for \'${args.joinToString(" ")}\'",
-                                        replyToMessageId = message.messageId
-                                )
-                                return@launch
-                            }
-                        }
-                        val exactMatch = results.asSequence().filter { it.nameWithoutExtension == fileName }.take(1)
-                        val key = exactMatch.singleOrNull() ?: results[Random.nextInt(0, results.size)]
-                        val fileToSend = Pair(key, fileList[key] ?: throw IllegalArgumentException("Failed to find corresponding hash for $key"))
                         update.message?.let { message ->
-                            bot.sendPictureSafe(
-                                    repository,
-                                    message.chat.id,
-                                    props.baseUrl,
-                                    fileToSend,
-                                    message.messageId,
-                                    genericCaption = props.genericCaption
-                            )
+                            bot.runForOwner(props.ownerId, message) {
+                                if (args.isEmpty()) {
+                                    sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                    sendMessage(
+                                            chatId = message.chat.id,
+                                            text = "No arguments supplied!",
+                                            replyToMessageId = message.messageId
+                                    )
+                                    return@runForOwner
+                                }
+                                val fileName = args.joinToString("_")
+                                val results = fileList.keys.filter { it.nameWithoutExtension.toLowerCase().startsWith(fileName.toLowerCase()) }
+                                if (results.isEmpty()) {
+                                    sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                    sendMessage(
+                                            chatId = message.chat.id,
+                                            text = "No files found for \'${args.joinToString(" ")}\'",
+                                            replyToMessageId = message.messageId
+                                    )
+                                    return@runForOwner
+                                }
+                                val exactMatch = results.asSequence().filter { it.nameWithoutExtension == fileName }.take(1)
+                                val key = exactMatch.singleOrNull() ?: results[Random.nextInt(0, results.size)]
+                                val fileToSend = Pair(key, fileList[key] ?: throw IllegalArgumentException("Failed to find corresponding hash for $key"))
+                                sendPictureSafe(
+                                        repository,
+                                        message.chat.id,
+                                        props.baseUrl,
+                                        fileToSend,
+                                        message.messageId,
+                                        genericCaption = props.genericCaption
+                                )
+                            }
                         }
                     }
                 }
 
-                if (props.ownerId != null) {
-                    command("quit") { bot, update, _ ->
-                        update.message?.let { message ->
-                            val messageFrom: Long = message.from?.id ?: 0
-                            if (messageFrom != props.ownerId) {
-                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                                bot.sendMessage(
-                                        chatId = message.chat.id,
-                                        text = "Unauthorized!",
-                                        replyToMessageId = message.messageId
-                                )
-                                return@command
-                            } else {
-                                bot.sendMessage(
-                                        chatId = message.chat.id,
-                                        text = "Going down!",
-                                        replyToMessageId = message.messageId
-                                )
-                            }
+                command("quit") { bot, update, _ ->
+                    update.message?.let { message ->
+                        bot.runForOwner(props.ownerId, message) {
+                            sendMessage(
+                                    chatId = message.chat.id,
+                                    text = "Going down!",
+                                    replyToMessageId = message.messageId
+                            )
                             coroutineContext.cancelChildren()
                             db.commit()
                             db.close()
@@ -119,85 +107,75 @@ class WallsBot : CoroutineScope {
 
                 command("random") { bot, update ->
                     launch {
-                        val keys = fileList.keys.toTypedArray()
-                        val randomInt = Random.nextInt(0, fileList.size)
-                        val fileToSend = Pair(keys[randomInt], fileList[keys[randomInt]] ?: throw IllegalArgumentException("Failed to find corresponding hash for ${keys[randomInt]}"))
                         update.message?.let { message ->
-                            bot.sendPictureSafe(
-                                    repository,
-                                    message.chat.id,
-                                    props.baseUrl,
-                                    fileToSend,
-                                    message.messageId,
-                                    genericCaption = props.genericCaption
-                            )
+                            bot.runForOwner(props.ownerId, message) {
+                                val keys = fileList.keys.toTypedArray()
+                                val randomInt = Random.nextInt(0, fileList.size)
+                                val fileToSend = Pair(keys[randomInt], fileList[keys[randomInt]] ?: throw IllegalArgumentException("Failed to find corresponding hash for ${keys[randomInt]}"))
+                                sendPictureSafe(
+                                        repository,
+                                        message.chat.id,
+                                        props.baseUrl,
+                                        fileToSend,
+                                        message.messageId,
+                                        genericCaption = props.genericCaption
+                                )
+                            }
                         }
                     }
                 }
 
                 command("search") { bot, update, args ->
                     launch {
-                        if (args.isEmpty()) {
-                            update.message?.let { message ->
-                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                                bot.sendMessage(
-                                        chatId = message.chat.id,
-                                        text = "No arguments supplied!",
-                                        replyToMessageId = message.messageId
-                                )
-                            }
-                            return@launch
-                        }
-                        val foundFiles = HashSet<String>()
-                        fileList.keys.filter { it.name.toLowerCase().startsWith(args.joinToString("_").toLowerCase()) }.forEach {
-                            foundFiles.add("[${it.sanitizedName}](${props.baseUrl}/${it.name})")
-                        }
                         update.message?.let { message ->
-                            bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                            if (foundFiles.isEmpty()) {
-                                bot.sendMessage(
-                                        chatId = message.chat.id,
-                                        replyToMessageId = message.messageId,
-                                        text = "No results found for '${args.joinToString(" ")}'",
-                                        parseMode = ParseMode.MARKDOWN,
-                                        disableWebPagePreview = true
-                                )
-                            } else {
-                                bot.sendMessage(
-                                        chatId = message.chat.id,
-                                        replyToMessageId = message.messageId,
-                                        text = foundFiles.joinToString("\n"),
-                                        parseMode = ParseMode.MARKDOWN,
-                                        disableWebPagePreview = true
-                                )
+                            bot.runForOwner(props.ownerId, message) {
+                                if (args.isEmpty()) {
+                                    sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                    sendMessage(
+                                            chatId = message.chat.id,
+                                            text = "No arguments supplied!",
+                                            replyToMessageId = message.messageId
+                                    )
+                                    return@runForOwner
+                                }
+                                val foundFiles = HashSet<String>()
+                                fileList.keys.filter { it.name.toLowerCase().startsWith(args.joinToString("_").toLowerCase()) }.forEach {
+                                    foundFiles.add("[${it.sanitizedName}](${props.baseUrl}/${it.name})")
+                                }
+                                sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                if (foundFiles.isEmpty()) {
+                                    sendMessage(
+                                            chatId = message.chat.id,
+                                            replyToMessageId = message.messageId,
+                                            text = "No results found for '${args.joinToString(" ")}'",
+                                            parseMode = ParseMode.MARKDOWN,
+                                            disableWebPagePreview = true
+                                    )
+                                } else {
+                                    sendMessage(
+                                            chatId = message.chat.id,
+                                            replyToMessageId = message.messageId,
+                                            text = foundFiles.joinToString("\n"),
+                                            parseMode = ParseMode.MARKDOWN,
+                                            disableWebPagePreview = true
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
-                if (props.ownerId != null) {
-                    command("stats") { bot, update ->
-                        launch {
-                            update.message?.let { message ->
-                                val messageFrom: Long = message.from?.id ?: 0
-                                if (messageFrom != props.ownerId) {
-                                    bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                                    bot.sendMessage(
-                                            chatId = message.chat.id,
-                                            text = "Unauthorized!",
-                                            replyToMessageId = message.messageId
-                                    )
-                                    return@launch
+                command("stats") { bot, update ->
+                    launch {
+                        update.message?.let { message ->
+                            bot.runForOwner(props.ownerId, message) {
+                                var msg = "Stats\n\n"
+                                statsMap.forEach { (name, count) ->
+                                    msg += "${name.replace("_", " ")}: $count\n"
                                 }
-                            }
-                            var msg = "Stats\n\n"
-                            statsMap.forEach { (name, count) ->
-                                msg += "${name.replace("_", " ")}: $count\n"
-                            }
-                            msg += "\n\nTotal files : ${fileList.size} \nDisk space used : $formattedDiskSize"
-                            update.message?.let { message ->
-                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                                bot.sendMessage(
+                                msg += "\n\nTotal files : ${fileList.size} \nDisk space used : $formattedDiskSize"
+                                sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                sendMessage(
                                         chatId = message.chat.id,
                                         text = msg,
                                         replyToMessageId = message.messageId
@@ -205,40 +183,33 @@ class WallsBot : CoroutineScope {
                             }
                         }
                     }
+                }
 
-                    command("dbstats") { bot, update, _ ->
+                command("dbstats") { bot, update, _ ->
+                    runBlocking {
+                        coroutineContext.cancelChildren()
                         update.message?.let { message ->
-                            val messageFrom: Long = message.from?.id ?: 0
-                            if (messageFrom != props.ownerId) {
-                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                                bot.sendMessage(
+                            bot.runForOwner(props.ownerId, message) {
+                                val savedKeysLength: Int = repository.find().size()
+                                sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                sendMessage(
                                         chatId = message.chat.id,
-                                        text = "Unauthorized",
+                                        text = "Total keys in db: $savedKeysLength",
                                         replyToMessageId = message.messageId
                                 )
-                                return@command
-                            } else {
-                                runBlocking {
-                                    coroutineContext.cancelChildren()
-                                    val savedKeysLength: Int = repository.find().size()
-                                    bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                                    bot.sendMessage(
-                                            chatId = message.chat.id,
-                                            text = "Total keys in db: $savedKeysLength",
-                                            replyToMessageId = message.messageId
-                                    )
-                                }
                             }
                         }
                     }
+                }
 
-                    command("update") { bot, update, _ ->
-                        runBlocking(coroutineContext) {
-                            coroutineContext.cancelChildren()
-                            refreshDiskCache()
-                            update.message?.let { message ->
-                                bot.sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                                bot.sendMessage(
+                command("update") { bot, update, _ ->
+                    runBlocking(coroutineContext) {
+                        coroutineContext.cancelChildren()
+                        refreshDiskCache()
+                        update.message?.let { message ->
+                            bot.runForOwner(props.ownerId, message) {
+                                sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                sendMessage(
                                         chatId = message.chat.id,
                                         text = "Updated files list!",
                                         replyToMessageId = message.messageId
