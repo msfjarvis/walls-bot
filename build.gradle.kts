@@ -59,3 +59,5 @@ tasks {
         }
     }
 }
+
+configureSpotless()
