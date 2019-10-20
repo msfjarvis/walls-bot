@@ -29,8 +29,8 @@ fun requireNotEmpty(str: String): String {
 val File.sanitizedName
     get() = nameWithoutExtension.replace('_', ' ')
 
-fun Bot.runForOwner(ownerId: Long, message: Message, toRun: Bot.() -> Unit) {
-    if (ownerId != message.from?.id) {
+fun Bot.runForOwner(props: AppProps, message: Message, forceLock: Boolean = false, toRun: Bot.() -> Unit) {
+    if ((props.lockToOwner || forceLock) && props.ownerId != message.from?.id) {
         return
     }
     toRun.invoke(this)

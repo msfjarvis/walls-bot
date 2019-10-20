@@ -5,3 +5,4 @@ botOwner=42069
 databaseFile=test.db
 genericCaption=true
 debug=false
+lockToOwner=false

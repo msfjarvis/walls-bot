@@ -56,7 +56,7 @@ class WallsBot : CoroutineScope {
                 command("pic") { bot, update, args ->
                     launch {
                         update.message?.let { message ->
-                            bot.runForOwner(props.ownerId, message) {
+                            bot.runForOwner(props, message) {
                                 if (args.isEmpty()) {
                                     sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                     sendMessage(
@@ -95,7 +95,7 @@ class WallsBot : CoroutineScope {
 
                 command("quit") { bot, update, _ ->
                     update.message?.let { message ->
-                        bot.runForOwner(props.ownerId, message) {
+                        bot.runForOwner(props, message, true) {
                             sendMessage(
                                     chatId = message.chat.id,
                                     text = "Going down!",
@@ -112,7 +112,7 @@ class WallsBot : CoroutineScope {
                 command("random") { bot, update ->
                     launch {
                         update.message?.let { message ->
-                            bot.runForOwner(props.ownerId, message) {
+                            bot.runForOwner(props, message) {
                                 val keys = fileList.keys.toTypedArray()
                                 val randomInt = Random.nextInt(0, fileList.size)
                                 val fileToSend = Pair(keys[randomInt], fileList[keys[randomInt]] ?: throw IllegalArgumentException("Failed to find corresponding hash for ${keys[randomInt]}"))
@@ -132,7 +132,7 @@ class WallsBot : CoroutineScope {
                 command("search") { bot, update, args ->
                     launch {
                         update.message?.let { message ->
-                            bot.runForOwner(props.ownerId, message) {
+                            bot.runForOwner(props, message) {
                                 if (args.isEmpty()) {
                                     sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                     sendMessage(
@@ -172,7 +172,7 @@ class WallsBot : CoroutineScope {
                 command("stats") { bot, update ->
                     launch {
                         update.message?.let { message ->
-                            bot.runForOwner(props.ownerId, message) {
+                            bot.runForOwner(props, message, true) {
                                 var msg = "Stats\n\n"
                                 statsMap.forEach { (name, count) ->
                                     msg += "${name.replace("_", " ")}: $count\n"
@@ -193,7 +193,7 @@ class WallsBot : CoroutineScope {
                     runBlocking {
                         coroutineContext.cancelChildren()
                         update.message?.let { message ->
-                            bot.runForOwner(props.ownerId, message) {
+                            bot.runForOwner(props, message, true) {
                                 val savedKeysLength: Int = repository.find().size()
                                 sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                 sendMessage(
@@ -211,7 +211,7 @@ class WallsBot : CoroutineScope {
                         coroutineContext.cancelChildren()
                         refreshDiskCache()
                         update.message?.let { message ->
-                            bot.runForOwner(props.ownerId, message) {
+                            bot.runForOwner(props, message, true) {
                                 sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                 sendMessage(
                                         chatId = message.chat.id,

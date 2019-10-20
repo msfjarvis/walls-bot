@@ -17,6 +17,7 @@ class AppProps : Properties() {
     val searchDir: String
     val genericCaption: Boolean
     val debug: Boolean
+    val lockToOwner: Boolean
 
     init {
         val configFile = File("config.prop")
@@ -33,5 +34,6 @@ class AppProps : Properties() {
         searchDir = requireNotEmpty(getProperty("searchDir"))
         genericCaption = getProperty("genericCaption")?.toBoolean() ?: false
         debug = getProperty("debug")?.toBoolean() ?: false
+        lockToOwner = getProperty("lockToOwner")?.toBoolean() ?: false
     }
 }
