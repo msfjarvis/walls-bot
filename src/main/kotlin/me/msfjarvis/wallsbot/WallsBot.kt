@@ -53,6 +53,23 @@ class WallsBot : CoroutineScope {
             timeout = 30
             logLevel = if (props.debug) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
             dispatch {
+                command("dbstats") { bot, update, _ ->
+                    runBlocking {
+                        coroutineContext.cancelChildren()
+                        update.message?.let { message ->
+                            bot.runForOwner(props, message, true) {
+                                val savedKeysLength: Int = repository.find().size()
+                                sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                sendMessage(
+                                        chatId = message.chat.id,
+                                        text = "Total keys in db: $savedKeysLength",
+                                        replyToMessageId = message.messageId
+                                )
+                            }
+                        }
+                    }
+                }
+
                 command("pic") { bot, update, args ->
                     launch {
                         update.message?.let { message ->
@@ -182,23 +199,6 @@ class WallsBot : CoroutineScope {
                                 sendMessage(
                                         chatId = message.chat.id,
                                         text = msg,
-                                        replyToMessageId = message.messageId
-                                )
-                            }
-                        }
-                    }
-                }
-
-                command("dbstats") { bot, update, _ ->
-                    runBlocking {
-                        coroutineContext.cancelChildren()
-                        update.message?.let { message ->
-                            bot.runForOwner(props, message, true) {
-                                val savedKeysLength: Int = repository.find().size()
-                                sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
-                                sendMessage(
-                                        chatId = message.chat.id,
-                                        text = "Total keys in db: $savedKeysLength",
                                         replyToMessageId = message.messageId
                                 )
                             }
