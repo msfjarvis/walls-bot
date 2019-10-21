@@ -53,6 +53,48 @@ class WallsBot : CoroutineScope {
             timeout = 30
             logLevel = if (props.debug) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
             dispatch {
+                command("all") { bot, update, args ->
+                    launch {
+                        update.message?.let { message ->
+                            bot.runForOwner(props, message, true) {
+                                if (args.isEmpty()) {
+                                    sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                    sendMessage(
+                                            chatId = message.chat.id,
+                                            text = "No arguments supplied!",
+                                            replyToMessageId = message.messageId
+                                    )
+                                    return@runForOwner
+                                }
+                                val foundFiles = filterFiles(args)
+                                sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                                if (foundFiles.isEmpty()) {
+                                    sendMessage(
+                                            chatId = message.chat.id,
+                                            replyToMessageId = message.messageId,
+                                            text = "No results found for '${args.joinToString(" ")}'",
+                                            parseMode = ParseMode.MARKDOWN,
+                                            disableWebPagePreview = true
+                                    )
+                                } else {
+                                    foundFiles.forEach {
+                                        launch {
+                                            bot.sendPictureSafe(
+                                                    repository,
+                                                    message.chat.id,
+                                                    props.baseUrl,
+                                                    Pair(it, fileList[it] ?: throw IllegalArgumentException("Failed to find corresponding hash for $it")),
+                                                    message.messageId,
+                                                    genericCaption = props.genericCaption
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 command("dbstats") { bot, update, _ ->
                     runBlocking {
                         coroutineContext.cancelChildren()
