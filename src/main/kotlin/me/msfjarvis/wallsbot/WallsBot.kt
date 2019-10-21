@@ -160,7 +160,7 @@ class WallsBot : CoroutineScope {
                                     return@runForOwner
                                 }
                                 val foundFiles = HashSet<String>()
-                                fileList.keys.filter { it.name.toLowerCase().startsWith(args.joinToString("_").toLowerCase()) }.forEach {
+                                filterFiles(args).forEach {
                                     foundFiles.add("[${it.sanitizedName}](${props.baseUrl}/${it.name})")
                                 }
                                 sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
@@ -228,6 +228,14 @@ class WallsBot : CoroutineScope {
 
     fun startPolling() {
         bot.startPolling()
+    }
+
+    private fun filterFiles(args: List<String>): HashSet<File> {
+        val foundFiles = HashSet<File>()
+        fileList.keys.filter { it.name.toLowerCase().startsWith(args.joinToString("_").toLowerCase()) }.forEach {
+            foundFiles.add(it)
+        }
+        return foundFiles
     }
 
     private fun refreshDiskCache() {
