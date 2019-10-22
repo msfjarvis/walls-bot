@@ -56,7 +56,7 @@ class WallsBot : CoroutineScope {
                 command("all") { bot, update, args ->
                     launch {
                         update.message?.let { message ->
-                            bot.runForOwner(props, message, true) {
+                            bot.runForOwner(props, message) {
                                 if (args.isEmpty()) {
                                     sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                     sendMessage(
