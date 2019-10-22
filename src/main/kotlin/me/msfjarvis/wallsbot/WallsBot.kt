@@ -112,6 +112,29 @@ class WallsBot : CoroutineScope {
                     }
                 }
 
+                command("next") { bot, update, args ->
+                    update.message?.let { message ->
+                        bot.runForOwner(props, message, true) {
+                            launch {
+                                val next: String? = statsMap.higherKey(args.joinToString("_")).replace("_", " ")
+                                if (next != null) {
+                                    sendMessage(
+                                            chatId = message.chat.id,
+                                            text = next,
+                                            replyToMessageId = message.messageId
+                                    )
+                                } else {
+                                    sendMessage(
+                                            chatId = message.chat.id,
+                                            text = "Failed to find next key for ${args.joinToString(" ")}",
+                                            replyToMessageId = message.messageId
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
                 command("pic") { bot, update, args ->
                     launch {
                         update.message?.let { message ->
