@@ -4,13 +4,6 @@
  */
 package me.msfjarvis.wallsbot
 
-import me.ivmg.telegram.Bot
-import me.ivmg.telegram.entities.ChatAction
-import me.ivmg.telegram.entities.Message
-import me.ivmg.telegram.entities.ParseMode
-import me.ivmg.telegram.network.fold
-import org.dizitart.kno2.filters.eq
-import org.dizitart.no2.objects.ObjectRepository
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -19,6 +12,13 @@ import java.io.InputStream
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
+import me.ivmg.telegram.Bot
+import me.ivmg.telegram.entities.ChatAction
+import me.ivmg.telegram.entities.Message
+import me.ivmg.telegram.entities.ParseMode
+import me.ivmg.telegram.network.fold
+import org.dizitart.kno2.filters.eq
+import org.dizitart.no2.objects.ObjectRepository
 
 fun requireNotEmpty(str: String): String {
     return if (str.isNotBlank()) str else {
