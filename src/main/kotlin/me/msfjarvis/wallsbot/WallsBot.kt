@@ -78,7 +78,7 @@ class WallsBot : CoroutineScope {
                                     )
                                 } else {
                                     foundFiles.forEach {
-                                        launch {
+                                        runBlocking {
                                             bot.sendPictureSafe(
                                                     repository,
                                                     message.chat.id,
