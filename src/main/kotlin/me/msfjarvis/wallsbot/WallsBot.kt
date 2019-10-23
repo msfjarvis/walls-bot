@@ -304,7 +304,7 @@ class WallsBot : CoroutineScope {
     }
 
     private fun refreshDiskCache() {
-        fileList = HashMap(requireNotNull(File(props.searchDir).listFiles()).associate { Pair(it, it.calculateMD5()) })
+        fileList = HashMap(File(props.searchDir).listFiles()?.associate { Pair(it, it.calculateMD5()) })
         statsMap.clear()
         fileList.keys.forEach {
             val split = it.nameWithoutExtension.split("_").toTypedArray().toMutableList().apply {

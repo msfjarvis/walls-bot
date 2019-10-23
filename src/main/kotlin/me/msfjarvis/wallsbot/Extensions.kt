@@ -92,13 +92,13 @@ fun Bot.sendPictureSafe(
     })
 }
 
-fun File.calculateMD5(): String? {
+fun File.calculateMD5(): String {
     val digest: MessageDigest
     try {
         digest = MessageDigest.getInstance("MD5")
     } catch (e: NoSuchAlgorithmException) {
         println("Exception while getting digest")
-        return null
+        throw RuntimeException(e)
     }
 
     val inputStream: InputStream
@@ -106,7 +106,7 @@ fun File.calculateMD5(): String? {
         inputStream = FileInputStream(this)
     } catch (e: FileNotFoundException) {
         println("Exception while getting FileInputStream")
-        return null
+        throw RuntimeException(e)
     }
 
     val buffer = ByteArray(8192)
