@@ -13,5 +13,4 @@ jobs:
         with:
           java-version: ${{ matrix.java_version }}
       - run: |
-          ./gradlew spotlessCheck
           ./gradlew build
