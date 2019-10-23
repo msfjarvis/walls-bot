@@ -16,3 +16,7 @@ jobs:
           ./gradlew spotlessCheck
           ./gradlew test
           ./gradlew build
+    - uses: actions/upload-artifact@master
+      with:
+        name: ExtensionTests_results.xml
+        path: build/test-results/test/TEST-me.msfjarvis.wallsbot.ExtensionTests.xml
