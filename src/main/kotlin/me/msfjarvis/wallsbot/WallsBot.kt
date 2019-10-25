@@ -273,10 +273,15 @@ class WallsBot : CoroutineScope {
 
                 command("update") { bot, update, _ ->
                     runBlocking(coroutineContext) {
-                        coroutineContext.cancelChildren()
-                        refreshDiskCache()
                         update.message?.let { message ->
                             bot.runForOwner(props, message, true) {
+                                sendMessage(
+                                        chatId = message.chat.id,
+                                        text = "Updating file list, this may take a few seconds...",
+                                        replyToMessageId = message.messageId
+                                )
+                                coroutineContext.cancelChildren()
+                                refreshDiskCache()
                                 sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                                 sendMessage(
                                         chatId = message.chat.id,
