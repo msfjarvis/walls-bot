@@ -7,7 +7,7 @@ apply plugin: "com.diffplug.gradle.spotless"
 spotless {
     kotlin {
       target "**/*.kt"
-      ktlint("0.34.2").userData(["indent_size": "4", "continuation_indent_size": "4"])
+      ktlint().userData(["indent_size": "4", "continuation_indent_size": "4"])
       licenseHeaderFile "spotless.license"
       trimTrailingWhitespace()
       endWithNewline()
