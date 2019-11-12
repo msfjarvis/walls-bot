@@ -4,6 +4,15 @@
  */
 package me.msfjarvis.wallsbot
 
+import java.io.File
+import java.text.DecimalFormat
+import java.util.TreeMap
+import kotlin.coroutines.CoroutineContext
+import kotlin.math.floor
+import kotlin.math.log10
+import kotlin.math.pow
+import kotlin.random.Random
+import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,15 +30,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.dizitart.kno2.nitrite
 import org.dizitart.no2.Nitrite
 import org.dizitart.no2.objects.ObjectRepository
-import java.io.File
-import java.text.DecimalFormat
-import java.util.TreeMap
-import kotlin.coroutines.CoroutineContext
-import kotlin.math.floor
-import kotlin.math.log10
-import kotlin.math.pow
-import kotlin.random.Random
-import kotlin.system.exitProcess
 
 class WallsBot : CoroutineScope {
     override val coroutineContext: CoroutineContext
