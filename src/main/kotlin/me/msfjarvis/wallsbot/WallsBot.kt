@@ -7,7 +7,6 @@ package me.msfjarvis.wallsbot
 import java.io.File
 import java.text.DecimalFormat
 import java.util.TreeMap
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.pow
@@ -15,7 +14,6 @@ import kotlin.random.Random
 import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -31,9 +29,7 @@ import org.dizitart.kno2.nitrite
 import org.dizitart.no2.Nitrite
 import org.dizitart.no2.objects.ObjectRepository
 
-class WallsBot : CoroutineScope {
-    override val coroutineContext: CoroutineContext
-        get() = Job() + Dispatchers.IO
+class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
 
     private val bot: Bot
     private var fileList = HashMap<File, String>()
