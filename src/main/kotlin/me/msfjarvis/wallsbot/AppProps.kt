@@ -12,7 +12,7 @@ class AppProps : Properties() {
 
     val baseUrl: String
     val botToken: String
-    val databaseFile: String
+    val databaseDir: String
     val ownerId: Long?
     val searchDir: String
     val genericCaption: Boolean
@@ -29,7 +29,7 @@ class AppProps : Properties() {
 
         baseUrl = requireNotEmpty(getProperty("baseUrl"))
         botToken = requireNotEmpty(getProperty("botToken"))
-        databaseFile = requireNotEmpty(getProperty("databaseFile"))
+        databaseDir = requireNotEmpty(getProperty("databaseDir"))
         ownerId = getProperty("botOwner").toLongOrNull()
         searchDir = requireNotEmpty(getProperty("searchDir"))
         genericCaption = getProperty("genericCaption")?.toBoolean() ?: false

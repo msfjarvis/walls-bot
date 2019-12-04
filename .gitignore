@@ -4,4 +4,4 @@
 out/
 build/
 config.prop
-*.db
+db

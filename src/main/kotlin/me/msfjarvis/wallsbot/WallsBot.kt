@@ -4,6 +4,8 @@
  */
 package me.msfjarvis.wallsbot
 
+import com.oath.halodb.HaloDB
+import com.oath.halodb.HaloDBOptions
 import java.io.File
 import java.text.DecimalFormat
 import java.util.TreeMap
@@ -26,9 +28,6 @@ import me.ivmg.telegram.dispatcher.command
 import me.ivmg.telegram.entities.ChatAction
 import me.ivmg.telegram.entities.ParseMode
 import okhttp3.logging.HttpLoggingInterceptor
-import org.dizitart.kno2.nitrite
-import org.dizitart.no2.Nitrite
-import org.dizitart.no2.objects.ObjectRepository
 
 class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
 
@@ -40,25 +39,31 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
 
     init {
         requireNotNull(props.ownerId) { "ownerId must be configured for the bot to function" }
-        val db = nitrite {
-            file = File(props.databaseFile)
-            autoCommitBufferSize = 2048
-            compress = true
-            autoCompact = false
+        val options = HaloDBOptions().apply {
+            maxFileSize = 128 * 1024 * 1024
+            maxTombstoneFileSize = 64 * 1024 * 1024
+            buildIndexThreads = 8
+            flushDataSizeBytes = 10 * 1024 * 1024
+            compactionThresholdPerFile = 0.7
+            compactionJobRate = 50 * 1024 * 1024
+            numberOfRecords = 10_000
+            isCleanUpTombstonesDuringOpen = true
+            isCleanUpInMemoryIndexOnClose = true
+            isUseMemoryPool = true
         }
-        val repository = db.getRepository(props.botToken, CachedFile::class.java)
+        val db = HaloDB.open(props.databaseDir, options)
         refreshDiskCache()
         bot = bot {
             token = props.botToken
             timeout = 30
             logLevel = if (props.debug) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
             dispatch {
-                setupCommands(db, repository)
+                setupCommands(db)
             }
         }
     }
 
-    private fun Dispatcher.setupCommands(db: Nitrite, repository: ObjectRepository<CachedFile>) {
+    private fun Dispatcher.setupCommands(db: HaloDB) {
         command("all") { bot, update, args ->
             launch {
                 update.message?.let { message ->
@@ -86,7 +91,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                             foundFiles.forEach {
                                 runBlocking {
                                     bot.sendPictureSafe(
-                                        repository,
+                                        db,
                                         message.chat.id,
                                         props.baseUrl,
                                         Pair(it, fileList[it] ?: throw IllegalArgumentException("Failed to find corresponding hash for $it")),
@@ -106,7 +111,8 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                 coroutineContext.cancelChildren()
                 update.message?.let { message ->
                     bot.runForOwner(props, message, true) {
-                        val savedKeysLength: Int = repository.find().size()
+                        var savedKeysLength = 0
+                        db.newIterator().forEach { _ -> savedKeysLength++ }
                         sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                         sendMessage(
                             chatId = message.chat.id,
@@ -169,7 +175,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                         val key = exactMatch.singleOrNull() ?: results[Random.nextInt(0, results.size)]
                         val fileToSend = Pair(key, fileList[key] ?: throw IllegalArgumentException("Failed to find corresponding hash for $key"))
                         sendPictureSafe(
-                            repository,
+                            db,
                             message.chat.id,
                             props.baseUrl,
                             fileToSend,
@@ -191,7 +197,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                     )
                     cancel()
                     db.apply {
-                        commit()
+                        pauseCompaction()
                         close()
                     }
                     exitProcess(0)
@@ -207,7 +213,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                         val randomInt = Random.nextInt(0, fileList.size)
                         val fileToSend = Pair(keys[randomInt], fileList[keys[randomInt]] ?: throw IllegalArgumentException("Failed to find corresponding hash for ${keys[randomInt]}"))
                         sendPictureSafe(
-                            repository,
+                            db,
                             message.chat.id,
                             props.baseUrl,
                             fileToSend,

@@ -4,12 +4,15 @@
  */
 package me.msfjarvis.wallsbot
 
+import com.oath.halodb.HaloDB
+import com.oath.halodb.HaloDBException
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import java.math.BigInteger
+import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import me.ivmg.telegram.Bot
@@ -17,8 +20,6 @@ import me.ivmg.telegram.entities.ChatAction
 import me.ivmg.telegram.entities.Message
 import me.ivmg.telegram.entities.ParseMode
 import me.ivmg.telegram.network.fold
-import org.dizitart.kno2.filters.eq
-import org.dizitart.no2.objects.ObjectRepository
 
 fun requireNotEmpty(str: String): String {
     return if (str.isNotBlank()) str else {
@@ -37,7 +38,7 @@ fun Bot.runForOwner(props: AppProps, message: Message, forceLock: Boolean = fals
 }
 
 fun Bot.sendPictureSafe(
-    repository: ObjectRepository<CachedFile>,
+    db: HaloDB,
     chatId: Long,
     baseUrl: String,
     fileToSend: Pair<File, String>,
@@ -45,9 +46,14 @@ fun Bot.sendPictureSafe(
     genericCaption: Boolean = false
 ) {
     val file = fileToSend.first
-    val digest = fileToSend.second
-    val dbCursor = repository.find(CachedFile::fileHash eq digest)
-    val fileId = dbCursor.firstOrDefault()?.fileId
+    val digest = fileToSend.second.toByteArray(StandardCharsets.UTF_8)
+    val fileId = try {
+        String(db.get(digest), StandardCharsets.UTF_8)
+    } catch (_: HaloDBException) {
+        null
+    } catch (_: IllegalStateException) {
+        null
+    }
     val caption = if (genericCaption)
         "[Link]($baseUrl/${file.name}"
     else
@@ -61,8 +67,9 @@ fun Bot.sendPictureSafe(
             replyToMessageId = replyToMessageId
     ).fold({ response ->
         response?.result?.photo?.get(0)?.fileId?.apply {
-            if (dbCursor.size() == 0)
-                repository.insert(CachedFile(this, digest))
+            if (fileId == null) {
+                db.put(this.toByteArray(StandardCharsets.UTF_8), digest)
+            }
         }
     }, {
         sendChatAction(chatId = chatId, action = ChatAction.UPLOAD_DOCUMENT)
@@ -85,8 +92,9 @@ fun Bot.sendPictureSafe(
         }
         documentMessage.fold({ response ->
             response?.result?.document?.fileId?.apply {
-                if (dbCursor.size() == 0)
-                    repository.insert(CachedFile(this, digest))
+                if (fileId == null) {
+                    db.put(this.toByteArray(StandardCharsets.UTF_8), digest)
+                }
             }
         }, {})
     })
