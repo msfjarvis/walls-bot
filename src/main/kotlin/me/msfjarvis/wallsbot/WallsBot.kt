@@ -14,6 +14,7 @@ import kotlin.random.Random
 import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -188,9 +189,11 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                         text = "Going down!",
                         replyToMessageId = message.messageId
                     )
-                    coroutineContext.cancelChildren()
-                    db.commit()
-                    db.close()
+                    cancel()
+                    db.apply {
+                        commit()
+                        close()
+                    }
                     exitProcess(0)
                 }
             }
