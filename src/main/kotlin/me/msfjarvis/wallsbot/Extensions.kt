@@ -30,6 +30,8 @@ fun requireNotEmpty(str: String): String {
 val File.sanitizedName
     get() = nameWithoutExtension.replace('_', ' ')
 
+fun String.toByteArray() = toByteArray(StandardCharsets.UTF_8)
+
 fun Bot.runForOwner(props: AppProps, message: Message, forceLock: Boolean = false, toRun: Bot.() -> Unit) {
     if ((props.lockToOwner || forceLock) && props.ownerId != message.from?.id) {
         return
@@ -46,7 +48,7 @@ fun Bot.sendPictureSafe(
     genericCaption: Boolean = false
 ) {
     val file = fileToSend.first
-    val digest = fileToSend.second.toByteArray(StandardCharsets.UTF_8)
+    val digest = fileToSend.second.toByteArray()
     val fileId = try {
         String(db.get(digest), StandardCharsets.UTF_8)
     } catch (_: HaloDBException) {
@@ -68,7 +70,7 @@ fun Bot.sendPictureSafe(
     ).fold({ response ->
         response?.result?.photo?.get(0)?.fileId?.apply {
             if (fileId == null) {
-                db.put(this.toByteArray(StandardCharsets.UTF_8), digest)
+                db.put(this.toByteArray(), digest)
             }
         }
     }, {
@@ -93,7 +95,7 @@ fun Bot.sendPictureSafe(
         documentMessage.fold({ response ->
             response?.result?.document?.fileId?.apply {
                 if (fileId == null) {
-                    db.put(this.toByteArray(StandardCharsets.UTF_8), digest)
+                    db.put(this.toByteArray(), digest)
                 }
             }
         }, {})
