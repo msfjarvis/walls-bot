@@ -196,6 +196,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                         replyToMessageId = message.messageId
                     )
                     cancel()
+                    stopPolling()
                     db.apply {
                         pauseCompaction()
                         close()
