@@ -322,7 +322,9 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
     }
 
     private fun refreshDiskCache() {
-        fileList = HashMap(File(props.searchDir).listFiles()?.associate { Pair(it, it.calculateMD5()) })
+        val searchDir = File(props.searchDir)
+        require(searchDir.exists() && searchDir.isDirectory) { "searchDir ($searchDir) must exist and be a directory!" }
+        fileList = HashMap(searchDir.listFiles()?.associate { Pair(it, it.calculateMD5()) })
         statsMap.clear()
         fileList.keys.forEach {
             val split = it.nameWithoutExtension.split("_").toTypedArray().toMutableList().apply {
