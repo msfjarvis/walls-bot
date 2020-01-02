@@ -17,7 +17,6 @@ import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.ivmg.telegram.Bot
@@ -108,7 +107,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
 
         command("dbstats") { bot, update, _ ->
             runBlocking {
-                coroutineContext.cancelChildren()
+                cancel()
                 update.message?.let { message ->
                     bot.runForOwner(props, message, true) {
                         var savedKeysLength = 0
@@ -287,7 +286,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
         }
 
         command("update") { bot, update, _ ->
-            runBlocking(coroutineContext) {
+            runBlocking {
                 update.message?.let { message ->
                     bot.runForOwner(props, message, true) {
                         sendMessage(
