@@ -35,5 +35,8 @@ class AppProps : Properties() {
         genericCaption = getProperty("genericCaption")?.toBoolean() ?: false
         debug = getProperty("debug")?.toBoolean() ?: false
         lockToOwner = getProperty("lockToOwner")?.toBoolean() ?: false
+
+        val searchDirectory = File(searchDir)
+        require(searchDirectory.isDirectory && searchDirectory.exists()) { "searchDir ($searchDir) must exist and be a directory" }
     }
 }
