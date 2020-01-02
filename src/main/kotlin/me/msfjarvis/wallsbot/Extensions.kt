@@ -44,7 +44,7 @@ fun Bot.sendPictureSafe(
     chatId: Long,
     baseUrl: String,
     fileToSend: Pair<File, String>,
-    replyToMessageId: Long? = null,
+    replyToMessageId: Long = -1,
     genericCaption: Boolean = false
 ) {
     val file = fileToSend.first
@@ -66,7 +66,7 @@ fun Bot.sendPictureSafe(
         fileId ?: "$baseUrl/${file.name}",
         caption,
         ParseMode.MARKDOWN,
-        replyToMessageId = replyToMessageId
+        replyToMessageId = if (replyToMessageId != -1L) replyToMessageId else null
     ).fold({ response ->
         response?.result?.photo?.get(0)?.fileId?.apply {
             if (fileId == null) {
@@ -81,7 +81,7 @@ fun Bot.sendPictureSafe(
                 file,
                 caption,
                 ParseMode.MARKDOWN,
-                replyToMessageId = replyToMessageId
+                replyToMessageId = if (replyToMessageId != -1L) replyToMessageId else null
             )
         } else {
             sendDocument(
@@ -89,12 +89,12 @@ fun Bot.sendPictureSafe(
                 fileId,
                 caption,
                 ParseMode.MARKDOWN,
-                replyToMessageId = replyToMessageId
+                replyToMessageId = if (replyToMessageId != -1L) replyToMessageId else null
             )
         }
         documentMessage.fold({ response ->
-            response?.result?.document?.fileId?.apply {
-                if (fileId == null) {
+            if (fileId == null) {
+                response?.result?.document?.fileId?.apply {
                     db.put(this.toByteArray(), digest)
                 }
             }
