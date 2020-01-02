@@ -295,7 +295,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                             text = "Updating file list, this may take a few seconds...",
                             replyToMessageId = message.messageId
                         )
-                        coroutineContext.cancelChildren()
+                        cancel()
                         refreshDiskCache()
                         sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
                         sendMessage(
