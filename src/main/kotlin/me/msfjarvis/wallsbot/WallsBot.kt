@@ -89,7 +89,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                             )
                         } else {
                             foundFiles.forEach {
-                                runBlocking {
+                                launch {
                                     bot.sendPictureSafe(
                                         db,
                                         message.chat.id,
