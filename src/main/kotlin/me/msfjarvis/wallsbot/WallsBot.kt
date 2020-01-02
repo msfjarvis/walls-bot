@@ -68,23 +68,23 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                 update.message?.let { message ->
                     bot.runForOwner(props, message) {
                         if (args.isEmpty()) {
-                            sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                            sendChatAction(message.chat.id, ChatAction.TYPING)
                             sendMessage(
-                                chatId = message.chat.id,
-                                text = "No arguments supplied!",
+                                message.chat.id,
+                                "No arguments supplied!",
                                 replyToMessageId = message.messageId
                             )
                             return@runForOwner
                         }
                         val foundFiles = filterFiles(args)
-                        sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                        sendChatAction(message.chat.id, ChatAction.TYPING)
                         if (foundFiles.isEmpty()) {
                             sendMessage(
-                                chatId = message.chat.id,
-                                replyToMessageId = message.messageId,
-                                text = "No results found for '${args.joinToString(" ")}'",
-                                parseMode = ParseMode.MARKDOWN,
-                                disableWebPagePreview = true
+                                message.chat.id,
+                                "No results found for '${args.joinToString(" ")}'",
+                                ParseMode.MARKDOWN,
+                                true,
+                                replyToMessageId = message.messageId
                             )
                         } else {
                             foundFiles.forEach {
@@ -95,7 +95,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                                         props.baseUrl,
                                         Pair(it, fileList[it] ?: throw IllegalArgumentException("Failed to find corresponding hash for $it")),
                                         message.messageId,
-                                        genericCaption = props.genericCaption
+                                        props.genericCaption
                                     )
                                 }
                             }
@@ -112,10 +112,10 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                     bot.runForOwner(props, message, true) {
                         var savedKeysLength = 0
                         db.newIterator().forEach { _ -> savedKeysLength++ }
-                        sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                        sendChatAction(message.chat.id, ChatAction.TYPING)
                         sendMessage(
-                            chatId = message.chat.id,
-                            text = "Total keys in db: $savedKeysLength",
+                            message.chat.id,
+                            "Total keys in db: $savedKeysLength",
                             replyToMessageId = message.messageId
                         )
                     }
@@ -130,14 +130,14 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                         val next: String? = statsMap.higherKey(args.joinToString("_")).replace("_", " ")
                         if (next != null) {
                             sendMessage(
-                                chatId = message.chat.id,
-                                text = next,
+                                message.chat.id,
+                                next,
                                 replyToMessageId = message.messageId
                             )
                         } else {
                             sendMessage(
-                                chatId = message.chat.id,
-                                text = "Failed to find next key for ${args.joinToString(" ")}",
+                                message.chat.id,
+                                "Failed to find next key for ${args.joinToString(" ")}",
                                 replyToMessageId = message.messageId
                             )
                         }
@@ -151,10 +151,10 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                 update.message?.let { message ->
                     bot.runForOwner(props, message) {
                         if (args.isEmpty()) {
-                            sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                            sendChatAction(message.chat.id, ChatAction.TYPING)
                             sendMessage(
-                                chatId = message.chat.id,
-                                text = "No arguments supplied!",
+                                message.chat.id,
+                                "No arguments supplied!",
                                 replyToMessageId = message.messageId
                             )
                             return@runForOwner
@@ -162,10 +162,10 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                         val fileName = args.joinToString("_")
                         val results = fileList.keys.filter { it.nameWithoutExtension.toLowerCase().startsWith(fileName.toLowerCase()) }
                         if (results.isEmpty()) {
-                            sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                            sendChatAction(message.chat.id, ChatAction.TYPING)
                             sendMessage(
-                                chatId = message.chat.id,
-                                text = "No files found for \'${args.joinToString(" ")}\'",
+                                message.chat.id,
+                                "No files found for \'${args.joinToString(" ")}\'",
                                 replyToMessageId = message.messageId
                             )
                             return@runForOwner
@@ -190,8 +190,8 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
             update.message?.let { message ->
                 bot.runForOwner(props, message, true) {
                     sendMessage(
-                        chatId = message.chat.id,
-                        text = "Going down!",
+                        message.chat.id,
+                        "Going down!",
                         replyToMessageId = message.messageId
                     )
                     cancel()
@@ -230,10 +230,10 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                 update.message?.let { message ->
                     bot.runForOwner(props, message) {
                         if (args.isEmpty()) {
-                            sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                            sendChatAction(message.chat.id, ChatAction.TYPING)
                             sendMessage(
-                                chatId = message.chat.id,
-                                text = "No arguments supplied!",
+                                message.chat.id,
+                                "No arguments supplied!",
                                 replyToMessageId = message.messageId
                             )
                             return@runForOwner
@@ -242,22 +242,22 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                         filterFiles(args).forEach {
                             foundFiles.add("[${it.sanitizedName}](${props.baseUrl}/${it.name})")
                         }
-                        sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                        sendChatAction(message.chat.id, ChatAction.TYPING)
                         if (foundFiles.isEmpty()) {
                             sendMessage(
-                                chatId = message.chat.id,
-                                replyToMessageId = message.messageId,
-                                text = "No results found for '${args.joinToString(" ")}'",
-                                parseMode = ParseMode.MARKDOWN,
-                                disableWebPagePreview = true
+                                message.chat.id,
+                                "No results found for '${args.joinToString(" ")}'",
+                                ParseMode.MARKDOWN,
+                                true,
+                                replyToMessageId = message.messageId
                             )
                         } else {
                             sendMessage(
-                                chatId = message.chat.id,
-                                replyToMessageId = message.messageId,
-                                text = foundFiles.joinToString("\n"),
-                                parseMode = ParseMode.MARKDOWN,
-                                disableWebPagePreview = true
+                                message.chat.id,
+                                foundFiles.joinToString("\n"),
+                                ParseMode.MARKDOWN,
+                                true,
+                                replyToMessageId = message.messageId
                             )
                         }
                     }
@@ -274,10 +274,10 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                             msg += "${name.replace("_", " ")}: $count\n"
                         }
                         msg += "\n\nTotal files : ${fileList.size} \nDisk space used : $formattedDiskSize"
-                        sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                        sendChatAction(message.chat.id, ChatAction.TYPING)
                         sendMessage(
-                            chatId = message.chat.id,
-                            text = msg,
+                            message.chat.id,
+                            msg,
                             replyToMessageId = message.messageId
                         )
                     }
@@ -290,16 +290,16 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                 update.message?.let { message ->
                     bot.runForOwner(props, message, true) {
                         sendMessage(
-                            chatId = message.chat.id,
-                            text = "Updating file list, this may take a few seconds...",
+                            message.chat.id,
+                            "Updating file list, this may take a few seconds...",
                             replyToMessageId = message.messageId
                         )
                         cancel()
                         refreshDiskCache()
-                        sendChatAction(chatId = message.chat.id, action = ChatAction.TYPING)
+                        sendChatAction(message.chat.id, ChatAction.TYPING)
                         sendMessage(
-                            chatId = message.chat.id,
-                            text = "Updated files list!",
+                            message.chat.id,
+                            "Updated files list!",
                             replyToMessageId = message.messageId
                         )
                     }

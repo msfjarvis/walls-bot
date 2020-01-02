@@ -60,13 +60,13 @@ fun Bot.sendPictureSafe(
         "[Link]($baseUrl/${file.name}"
     else
         "[${file.sanitizedName}]($baseUrl/${file.name})"
-    sendChatAction(chatId = chatId, action = ChatAction.UPLOAD_PHOTO)
+    sendChatAction(chatId, ChatAction.UPLOAD_PHOTO)
     sendPhoto(
-            chatId = chatId,
-            photo = fileId ?: "$baseUrl/${file.name}",
-            caption = caption,
-            parseMode = ParseMode.MARKDOWN,
-            replyToMessageId = replyToMessageId
+        chatId,
+        fileId ?: "$baseUrl/${file.name}",
+        caption,
+        ParseMode.MARKDOWN,
+        replyToMessageId = replyToMessageId
     ).fold({ response ->
         response?.result?.photo?.get(0)?.fileId?.apply {
             if (fileId == null) {
@@ -74,22 +74,22 @@ fun Bot.sendPictureSafe(
             }
         }
     }, {
-        sendChatAction(chatId = chatId, action = ChatAction.UPLOAD_DOCUMENT)
+        sendChatAction(chatId, ChatAction.UPLOAD_DOCUMENT)
         val documentMessage = if (fileId == null) {
             sendDocument(
-                    chatId = chatId,
-                    document = file,
-                    caption = caption,
-                    parseMode = ParseMode.MARKDOWN,
-                    replyToMessageId = replyToMessageId
+                chatId,
+                file,
+                caption,
+                ParseMode.MARKDOWN,
+                replyToMessageId = replyToMessageId
             )
         } else {
             sendDocument(
-                    chatId = chatId,
-                    fileId = fileId,
-                    caption = caption,
-                    parseMode = ParseMode.MARKDOWN,
-                    replyToMessageId = replyToMessageId
+                chatId,
+                fileId,
+                caption,
+                ParseMode.MARKDOWN,
+                replyToMessageId = replyToMessageId
             )
         }
         documentMessage.fold({ response ->
