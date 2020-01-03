@@ -17,7 +17,6 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import me.ivmg.telegram.Bot
 import me.ivmg.telegram.entities.ChatAction
-import me.ivmg.telegram.entities.Message
 import me.ivmg.telegram.entities.ParseMode
 import me.ivmg.telegram.network.fold
 
@@ -25,6 +24,10 @@ fun requireNotEmpty(str: String): String {
     return if (str.isNotBlank()) str else {
         throw IllegalArgumentException("Required value was empty")
     }
+}
+
+fun List<String>.toFileName(): String {
+    return joinToString("_")
 }
 
 val File.sanitizedName

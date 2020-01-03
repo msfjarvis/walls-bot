@@ -66,40 +66,40 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
         command("all") { bot, update, args ->
             launch {
                 update.message?.let { message ->
-                        if (args.isEmpty()) {
-                            bot.sendChatAction(message.chat.id, ChatAction.TYPING)
-                            bot.sendMessage(
-                                message.chat.id,
-                                "No arguments supplied!",
-                                replyToMessageId = message.messageId
-                            )
-                            return@launch
-                        }
-                        val foundFiles = filterFiles(args)
+                    if (args.isEmpty()) {
                         bot.sendChatAction(message.chat.id, ChatAction.TYPING)
-                        if (foundFiles.isEmpty()) {
-                            bot.sendMessage(
-                                message.chat.id,
-                                "No results found for '${args.joinToString(" ")}'",
-                                ParseMode.MARKDOWN,
-                                true,
-                                replyToMessageId = message.messageId
-                            )
-                        } else {
-                            foundFiles.forEach {
-                                launch {
-                                    bot.sendPictureSafe(
-                                        db,
-                                        message.chat.id,
-                                        props.baseUrl,
-                                        Pair(it, fileList[it] ?: throw IllegalArgumentException("Failed to find corresponding hash for $it")),
-                                        message.messageId,
-                                        props.genericCaption
-                                    )
-                                }
+                        bot.sendMessage(
+                            message.chat.id,
+                            "No arguments supplied!",
+                            replyToMessageId = message.messageId
+                        )
+                        return@launch
+                    }
+                    val foundFiles = filterFiles(args)
+                    bot.sendChatAction(message.chat.id, ChatAction.TYPING)
+                    if (foundFiles.isEmpty()) {
+                        bot.sendMessage(
+                            message.chat.id,
+                            "No results found for '${args.joinToString(" ")}'",
+                            ParseMode.MARKDOWN,
+                            true,
+                            replyToMessageId = message.messageId
+                        )
+                    } else {
+                        foundFiles.forEach {
+                            launch {
+                                bot.sendPictureSafe(
+                                    db,
+                                    message.chat.id,
+                                    props.baseUrl,
+                                    Pair(it, fileList[it]
+                                        ?: throw IllegalArgumentException("Failed to find corresponding hash for $it")),
+                                    message.messageId,
+                                    props.genericCaption
+                                )
                             }
                         }
-                     
+                    }
                 }
             }
         }
@@ -166,7 +166,8 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                     }
                     val exactMatch = results.asSequence().filter { it.nameWithoutExtension == fileName }.take(1)
                     val key = exactMatch.singleOrNull() ?: results[Random.nextInt(0, results.size)]
-                    val fileToSend = Pair(key, fileList[key] ?: throw IllegalArgumentException("Failed to find corresponding hash for $key"))
+                    val fileToSend = Pair(key, fileList[key]
+                        ?: throw IllegalArgumentException("Failed to find corresponding hash for $key"))
                     bot.sendPictureSafe(
                         db,
                         message.chat.id,
@@ -175,7 +176,6 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                         message.messageId,
                         genericCaption = props.genericCaption
                     )
-
                 }
             }
         }
@@ -202,7 +202,8 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                 update.message?.let { message ->
                     val keys = fileList.keys.toTypedArray()
                     val randomInt = Random.nextInt(0, fileList.size)
-                    val fileToSend = Pair(keys[randomInt], fileList[keys[randomInt]] ?: throw IllegalArgumentException("Failed to find corresponding hash for ${keys[randomInt]}"))
+                    val fileToSend = Pair(keys[randomInt], fileList[keys[randomInt]]
+                        ?: throw IllegalArgumentException("Failed to find corresponding hash for ${keys[randomInt]}"))
                     bot.sendPictureSafe(
                         db,
                         message.chat.id,
@@ -304,10 +305,6 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
         return foundFiles
     }
 
-    private fun List<String>.toFileName(): String {
-        return joinToString("_")
-    }
-
     private fun refreshDiskCache() {
         fileList = HashMap(File(props.searchDir).listFiles()?.associate { Pair(it, it.calculateMD5()) })
         statsMap.clear()
@@ -326,6 +323,6 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
         val digitGroups: Double = floor((log10(diskSpace.toDouble()) / log10(1024.0)))
         formattedDiskSize = DecimalFormat("#,##0.##")
-                .format(diskSpace / 1024.0.pow(digitGroups)) + " " + units[digitGroups.toInt()]
+            .format(diskSpace / 1024.0.pow(digitGroups)) + " " + units[digitGroups.toInt()]
     }
 }
