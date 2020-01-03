@@ -98,8 +98,9 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
 
         command("dbstats") { bot, update, _ ->
             runBlocking {
-                cancel()
                 update.message?.let { message ->
+                    if (props.ownerId != message.from?.id) return@runBlocking
+                    cancel()
                     var savedKeysLength = 0
                     db.newIterator().forEach { _ -> savedKeysLength++ }
                     bot.sendChatAction(message.chat.id, ChatAction.TYPING)
@@ -166,6 +167,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
 
         command("quit") { bot, update, _ ->
             update.message?.let { message ->
+                if (props.ownerId != message.from?.id) return@command
                 bot.sendMessage(
                     message.chat.id,
                     "Going down!",
@@ -233,6 +235,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
         command("stats") { bot, update ->
             launch {
                 update.message?.let { message ->
+                    if (props.ownerId != message.from?.id) return@launch
                     var msg = "Stats\n\n"
                     statsMap.forEach { (name, count) ->
                         msg += "${name.replace("_", " ")}: $count\n"
@@ -251,6 +254,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
         command("update") { bot, update, _ ->
             runBlocking {
                 update.message?.let { message ->
+                    if (props.ownerId != message.from?.id) return@runBlocking
                     bot.sendMessage(
                         message.chat.id,
                         "Updating file list, this may take a few seconds...",
