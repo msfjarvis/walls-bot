@@ -127,7 +127,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
             update.message?.let { message ->
                 bot.runForOwner(props, message, true) {
                     launch {
-                        val next: String? = statsMap.higherKey(args.joinToString("_")).replace("_", " ")
+                        val next: String? = statsMap.higherKey(args.toFileName()).replace("_", " ")
                         if (next != null) {
                             sendMessage(
                                 message.chat.id,
@@ -159,7 +159,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                             )
                             return@runForOwner
                         }
-                        val fileName = args.joinToString("_")
+                        val fileName = args.toFileName()
                         val results = fileList.keys.filter { it.nameWithoutExtension.toLowerCase().startsWith(fileName.toLowerCase()) }
                         if (results.isEmpty()) {
                             sendChatAction(message.chat.id, ChatAction.TYPING)
@@ -314,10 +314,14 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
 
     private fun filterFiles(args: List<String>): HashSet<File> {
         val foundFiles = HashSet<File>()
-        fileList.keys.filter { it.name.toLowerCase().startsWith(args.joinToString("_").toLowerCase()) }.forEach {
+        fileList.keys.filter { it.name.toLowerCase().startsWith(args.toFileName().toLowerCase()) }.forEach {
             foundFiles.add(it)
         }
         return foundFiles
+    }
+
+    private fun List<String>.toFileName(): String {
+        return joinToString("_")
     }
 
     private fun refreshDiskCache() {
@@ -327,7 +331,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
             val split = it.nameWithoutExtension.split("_").toTypedArray().toMutableList().apply {
                 removeAt(size - 1)
             }
-            val key = split.joinToString("_")
+            val key = split.toFileName()
             val count = statsMap.getOrDefault(key, 0)
             statsMap[key] = count + 1
         }
