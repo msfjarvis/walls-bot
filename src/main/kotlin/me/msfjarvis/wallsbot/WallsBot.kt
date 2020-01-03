@@ -64,17 +64,9 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
 
     private fun Dispatcher.setupCommands(db: HaloDB) {
         command("all") { bot, update, args ->
+            if (args.isEmpty()) return@command
             launch {
                 update.message?.let { message ->
-                    if (args.isEmpty()) {
-                        bot.sendChatAction(message.chat.id, ChatAction.TYPING)
-                        bot.sendMessage(
-                            message.chat.id,
-                            "No arguments supplied!",
-                            replyToMessageId = message.messageId
-                        )
-                        return@launch
-                    }
                     val foundFiles = filterFiles(args)
                     bot.sendChatAction(message.chat.id, ChatAction.TYPING)
                     if (foundFiles.isEmpty()) {
@@ -142,17 +134,9 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
         }
 
         command("pic") { bot, update, args ->
+            if (args.isEmpty()) return@command
             launch {
                 update.message?.let { message ->
-                    if (args.isEmpty()) {
-                        bot.sendChatAction(message.chat.id, ChatAction.TYPING)
-                        bot.sendMessage(
-                            message.chat.id,
-                            "No arguments supplied!",
-                            replyToMessageId = message.messageId
-                        )
-                        return@launch
-                    }
                     val fileName = args.toFileName()
                     val results = fileList.keys.filter { it.nameWithoutExtension.toLowerCase().startsWith(fileName.toLowerCase()) }
                     if (results.isEmpty()) {
@@ -217,17 +201,9 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
         }
 
         command("search") { bot, update, args ->
+            if (args.isEmpty()) return@command
             launch {
                 update.message?.let { message ->
-                    if (args.isEmpty()) {
-                        bot.sendChatAction(message.chat.id, ChatAction.TYPING)
-                        bot.sendMessage(
-                            message.chat.id,
-                            "No arguments supplied!",
-                            replyToMessageId = message.messageId
-                        )
-                        return@launch
-                    }
                     val foundFiles = HashSet<String>()
                     filterFiles(args).forEach {
                         foundFiles.add("[${it.sanitizedName}](${props.baseUrl}/${it.name})")
