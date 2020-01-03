@@ -32,13 +32,6 @@ val File.sanitizedName
 
 fun String.toByteArray() = toByteArray(StandardCharsets.UTF_8)
 
-fun Bot.runForOwner(props: AppProps, message: Message, forceLock: Boolean = false, toRun: Bot.() -> Unit) {
-    if ((props.lockToOwner || forceLock) && props.ownerId != message.from?.id) {
-        return
-    }
-    toRun.invoke(this)
-}
-
 fun Bot.sendPictureSafe(
     db: HaloDB,
     chatId: Long,
