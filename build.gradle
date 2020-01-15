@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.diffplug.spotless:spotless-plugin-gradle:3.27.0'
+        classpath 'com.diffplug.spotless:spotless-plugin-gradle:3.27.1'
     }
 }
 
