@@ -9,7 +9,6 @@ import com.oath.halodb.HaloDBException
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
-import java.io.IOException
 import java.io.InputStream
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets
@@ -117,11 +116,11 @@ fun File.calculateMD5(): String {
 
     val buffer = ByteArray(8192)
     var read: Int
-    try {
-        read = inputStream.read(buffer)
+    inputStream.use {
+        read = it.read(buffer)
         while (read > 0) {
             digest.update(buffer, 0, read)
-            read = inputStream.read(buffer)
+            read = it.read(buffer)
         }
         val md5sum = digest.digest()
         val bigInt = BigInteger(1, md5sum)
@@ -129,13 +128,5 @@ fun File.calculateMD5(): String {
         // Fill to 32 chars
         output = String.format("%32s", output).replace(' ', '0')
         return output
-    } catch (e: IOException) {
-        throw RuntimeException("Unable to process file for MD5")
-    } finally {
-        try {
-            inputStream.close()
-        } catch (e: IOException) {
-            println("Exception on closing MD5 input stream")
-        }
     }
 }
