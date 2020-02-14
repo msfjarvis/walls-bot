@@ -16,7 +16,7 @@ import kotlin.random.Random
 import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.ivmg.telegram.Bot
@@ -100,7 +100,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
             runBlocking {
                 update.message?.let { message ->
                     if (props.ownerId != message.from?.id) return@runBlocking
-                    cancel()
+                    coroutineContext.cancelChildren()
                     var savedKeysLength = 0
                     db.newIterator().forEach { _ -> savedKeysLength++ }
                     bot.sendChatAction(message.chat.id, ChatAction.TYPING)
@@ -173,7 +173,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                     "Going down!",
                     replyToMessageId = message.messageId
                 )
-                cancel()
+                coroutineContext.cancelChildren()
                 bot.stopPolling()
                 db.apply {
                     pauseCompaction()
@@ -260,7 +260,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                         "Updating file list, this may take a few seconds...",
                         replyToMessageId = message.messageId
                     )
-                    cancel()
+                    coroutineContext.cancelChildren()
                     refreshDiskCache()
                     bot.sendChatAction(message.chat.id, ChatAction.TYPING)
                     bot.sendMessage(
