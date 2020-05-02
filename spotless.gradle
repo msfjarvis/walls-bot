@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2019 Harsh Shandilya <msfjarvis@gmail.com>. All Rights Reserved.
+ * Copyright © 2018-2020 Harsh Shandilya <me@msfjarvis.dev>. All Rights Reserved.
  * SPDX-License-Identifier: MIT
  */
 apply plugin: "com.diffplug.gradle.spotless"
