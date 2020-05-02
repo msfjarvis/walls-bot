@@ -3,6 +3,5 @@ searchDir=/full/path/to/local/mirror/of/the/walls/
 baseUrl=https://url.to.top.level/folder/on/mirror/without/trailing/slash
 botOwner=42069
 databaseDir=db
-genericCaption=true
 debug=false
 lockToOwner=false

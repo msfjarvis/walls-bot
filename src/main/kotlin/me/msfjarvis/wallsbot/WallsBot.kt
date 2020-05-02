@@ -5,6 +5,7 @@
 package me.msfjarvis.wallsbot
 
 import com.oath.halodb.HaloDB
+import com.oath.halodb.HaloDBException
 import com.oath.halodb.HaloDBOptions
 import java.io.File
 import java.text.DecimalFormat
@@ -26,14 +27,16 @@ import me.ivmg.telegram.dispatcher.Dispatcher
 import me.ivmg.telegram.dispatcher.command
 import me.ivmg.telegram.entities.ChatAction
 import me.ivmg.telegram.entities.ParseMode
+import me.ivmg.telegram.network.fold
 import okhttp3.logging.HttpLoggingInterceptor
 
 class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
 
     private val bot: Bot
+    private val db: HaloDB
     private var fileList = HashMap<File, String>()
-    private var formattedDiskSize: String = ""
-    private val props: AppProps = AppProps()
+    private var formattedDiskSize = ""
+    private val props = AppProps()
     private var statsMap = TreeMap<String, Int>()
 
     init {
@@ -50,19 +53,23 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
             isCleanUpInMemoryIndexOnClose = true
             isUseMemoryPool = true
         }
-        val db = HaloDB.open(props.databaseDir, options)
+        db = HaloDB.open(props.databaseDir, options)
         refreshDiskCache()
         bot = bot {
             token = props.botToken
             timeout = 30
             logLevel = if (props.debug) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
             dispatch {
-                setupCommands(db)
+                setupCommands()
             }
         }
     }
 
-    private fun Dispatcher.setupCommands(db: HaloDB) {
+    fun startPolling() {
+        bot.startPolling()
+    }
+
+    private fun Dispatcher.setupCommands() {
         command("all") { bot, update, args ->
             if (args.isEmpty()) return@command
             launch {
@@ -80,14 +87,11 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                     } else {
                         foundFiles.forEach {
                             launch {
-                                bot.sendPictureSafe(
-                                    db,
+                                send(
                                     message.chat.id,
-                                    props.baseUrl,
                                     Pair(it, fileList[it]
                                         ?: throw IllegalArgumentException("Failed to find corresponding hash for $it")),
-                                    message.messageId,
-                                    props.genericCaption
+                                    message.messageId
                                 )
                             }
                         }
@@ -153,14 +157,7 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                     val key = exactMatch.singleOrNull() ?: results[Random.nextInt(0, results.size)]
                     val fileToSend = Pair(key, fileList[key]
                         ?: throw IllegalArgumentException("Failed to find corresponding hash for $key"))
-                    bot.sendPictureSafe(
-                        db,
-                        message.chat.id,
-                        props.baseUrl,
-                        fileToSend,
-                        message.messageId,
-                        genericCaption = props.genericCaption
-                    )
+                    send(message.chat.id, fileToSend, message.messageId)
                 }
             }
         }
@@ -183,21 +180,14 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
             }
         }
 
-        command("random") { bot, update ->
+        command("random") { _, update ->
             launch {
                 update.message?.let { message ->
                     val keys = fileList.keys.toTypedArray()
                     val randomInt = Random.nextInt(0, fileList.size)
                     val fileToSend = Pair(keys[randomInt], fileList[keys[randomInt]]
                         ?: throw IllegalArgumentException("Failed to find corresponding hash for ${keys[randomInt]}"))
-                    bot.sendPictureSafe(
-                        db,
-                        message.chat.id,
-                        props.baseUrl,
-                        fileToSend,
-                        message.messageId,
-                        genericCaption = props.genericCaption
-                    )
+                    send(message.chat.id, fileToSend, message.messageId)
                 }
             }
         }
@@ -273,8 +263,90 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
         }
     }
 
-    fun startPolling() {
-        bot.startPolling()
+    /**
+     * This method does a rudimentary file size check to avoid a network call, as files above 5 mB can only be sent
+     * as documents through the API. In my benchmarks
+     */
+    private fun send(
+        chatId: Long,
+        fileToSend: Pair<File, String>,
+        replyToMessageId: Long = -1L
+    ) {
+        if (fileToSend.first.length() > 5242880)
+            sendDocument(chatId, fileToSend.first, fileToSend.second.toByteArray(Charsets.UTF_8), replyToMessageId)
+        else
+            sendPicture(chatId, fileToSend.first, fileToSend.second.toByteArray(Charsets.UTF_8), replyToMessageId)
+    }
+
+    private fun sendPicture(
+        chatId: Long,
+        file: File,
+        digest: ByteArray,
+        replyToMessageId: Long = -1L
+    ) = with(bot) {
+        val fileId = getIdFromDb(digest)
+        val caption = "[${file.sanitizedName}](${props.baseUrl}/${file.name})"
+        sendChatAction(chatId, ChatAction.UPLOAD_PHOTO)
+        sendPhoto(
+            chatId,
+            fileId ?: "${props.baseUrl}/${file.name}",
+            caption,
+            ParseMode.MARKDOWN,
+            replyToMessageId = if (replyToMessageId != -1L) replyToMessageId else null
+        ).fold({ response ->
+            response?.result?.photo?.get(0)?.fileId?.apply {
+                if (fileId == null) {
+                    db.put(this.toByteArray(Charsets.UTF_8), digest)
+                }
+            }
+        }, {
+            sendDocument(chatId, file, digest, replyToMessageId)
+        })
+    }
+
+    private fun sendDocument(
+        chatId: Long,
+        file: File,
+        digest: ByteArray,
+        replyToMessageId: Long = -1L
+    ) = with(bot) {
+        val fileId = getIdFromDb(digest)
+        val caption = "[${file.sanitizedName}](${props.baseUrl}/${file.name})"
+        sendChatAction(chatId, ChatAction.UPLOAD_DOCUMENT)
+        val documentMessage = if (fileId == null) {
+            sendDocument(
+                chatId,
+                file,
+                caption,
+                ParseMode.MARKDOWN,
+                replyToMessageId = if (replyToMessageId != -1L) replyToMessageId else null
+            )
+        } else {
+            sendDocument(
+                chatId,
+                fileId,
+                caption,
+                ParseMode.MARKDOWN,
+                replyToMessageId = if (replyToMessageId != -1L) replyToMessageId else null
+            )
+        }
+        documentMessage.fold({ response ->
+            if (fileId == null) {
+                response?.result?.document?.fileId?.apply {
+                    db.put(this.toByteArray(Charsets.UTF_8), digest)
+                }
+            }
+        }, {})
+    }
+
+    private fun getIdFromDb(key: ByteArray): String? {
+        return try {
+            String(db.get(key), Charsets.UTF_8)
+        } catch (_: HaloDBException) {
+            null
+        } catch (_: IllegalStateException) {
+            null
+        }
     }
 
     private fun filterFiles(args: List<String>): HashSet<File> {

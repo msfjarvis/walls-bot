@@ -15,7 +15,6 @@ class AppProps : Properties() {
     val databaseDir: String
     val ownerId: Long?
     val searchDir: String
-    val genericCaption: Boolean
     val debug: Boolean
 
     init {
@@ -31,7 +30,6 @@ class AppProps : Properties() {
         databaseDir = requireNotEmpty(getProperty("databaseDir"))
         ownerId = getProperty("botOwner").toLongOrNull()
         searchDir = requireNotEmpty(getProperty("searchDir"))
-        genericCaption = getProperty("genericCaption")?.toBoolean() ?: false
         debug = getProperty("debug")?.toBoolean() ?: false
 
         val searchDirectory = File(searchDir)
