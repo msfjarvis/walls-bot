@@ -7,6 +7,9 @@ package me.msfjarvis.wallsbot
 import com.oath.halodb.HaloDB
 import com.oath.halodb.HaloDBException
 import com.oath.halodb.HaloDBOptions
+import io.sentry.Sentry
+import io.sentry.SentryClient
+import io.sentry.SentryClientFactory
 import java.io.File
 import java.text.DecimalFormat
 import java.util.TreeMap
@@ -38,8 +41,11 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
     private var formattedDiskSize = ""
     private val props = AppProps()
     private var statsMap = TreeMap<String, Int>()
+    private val sentry: SentryClient
 
     init {
+        Sentry.init(props.sentryDsn)
+        sentry = SentryClientFactory.sentryClient(props.sentryDsn)
         requireNotNull(props.ownerId) { "ownerId must be configured for the bot to function" }
         val options = HaloDBOptions().apply {
             maxFileSize = 128 * 1024 * 1024
@@ -300,6 +306,9 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                 }
             }
         }, {
+            if (it.exception != null) {
+                sentry.sendException(it.exception)
+            }
             sendDocument(chatId, file, digest, replyToMessageId)
         })
     }
@@ -336,7 +345,11 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                     db.put(this.toByteArray(Charsets.UTF_8), digest)
                 }
             }
-        }, {})
+        }, {
+            if (it.exception != null) {
+                sentry.sendException(it.exception)
+            }
+        })
     }
 
     private fun getIdFromDb(key: ByteArray): String? {

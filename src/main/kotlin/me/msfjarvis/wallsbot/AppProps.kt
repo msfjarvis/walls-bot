@@ -13,9 +13,10 @@ class AppProps : Properties() {
     val baseUrl: String
     val botToken: String
     val databaseDir: String
+    val debug: Boolean
     val ownerId: Long?
     val searchDir: String
-    val debug: Boolean
+    val sentryDsn: String
 
     init {
         val configFile = File("config.prop")
@@ -28,9 +29,10 @@ class AppProps : Properties() {
         baseUrl = requireNotEmpty(getProperty("baseUrl"))
         botToken = requireNotEmpty(getProperty("botToken"))
         databaseDir = requireNotEmpty(getProperty("databaseDir"))
+        debug = getProperty("debug")?.toBoolean() ?: false
         ownerId = getProperty("botOwner").toLongOrNull()
         searchDir = requireNotEmpty(getProperty("searchDir"))
-        debug = getProperty("debug")?.toBoolean() ?: false
+        sentryDsn = requireNotEmpty(getProperty("sentryDsn"))
 
         val searchDirectory = File(searchDir)
         require(searchDirectory.isDirectory && searchDirectory.exists()) { "searchDir ($searchDir) must exist and be a directory" }

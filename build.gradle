@@ -47,6 +47,7 @@ dependencies {
     implementation 'io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:4.6.0'
     implementation 'com.oath.halodb:halodb:0.5.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5'
+    implementation 'io.sentry:sentry:1.7.30'
     testImplementation 'junit:junit:4.13'
 }
 

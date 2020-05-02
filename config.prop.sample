@@ -5,3 +5,5 @@ botOwner=42069
 databaseDir=db
 debug=false
 lockToOwner=false
+# Sentry DSN to record errors
+sentryDsn=https://876ea19c78344b99b02314a152d07f59@o386697.ingest.sentry.io/5221258
