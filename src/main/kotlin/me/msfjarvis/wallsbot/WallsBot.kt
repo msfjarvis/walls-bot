@@ -4,6 +4,14 @@
  */
 package me.msfjarvis.wallsbot
 
+import com.github.kotlintelegrambot.Bot
+import com.github.kotlintelegrambot.bot
+import com.github.kotlintelegrambot.dispatch
+import com.github.kotlintelegrambot.dispatcher.Dispatcher
+import com.github.kotlintelegrambot.dispatcher.command
+import com.github.kotlintelegrambot.entities.ChatAction
+import com.github.kotlintelegrambot.entities.ParseMode
+import com.github.kotlintelegrambot.network.fold
 import com.oath.halodb.HaloDB
 import com.oath.halodb.HaloDBException
 import com.oath.halodb.HaloDBOptions
@@ -23,14 +31,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import me.ivmg.telegram.Bot
-import me.ivmg.telegram.bot
-import me.ivmg.telegram.dispatch
-import me.ivmg.telegram.dispatcher.Dispatcher
-import me.ivmg.telegram.dispatcher.command
-import me.ivmg.telegram.entities.ChatAction
-import me.ivmg.telegram.entities.ParseMode
-import me.ivmg.telegram.network.fold
 import okhttp3.logging.HttpLoggingInterceptor
 
 class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
