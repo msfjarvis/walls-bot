@@ -91,14 +91,10 @@ class WallsBot : CoroutineScope by CoroutineScope(Dispatchers.IO) {
                             replyToMessageId = message.messageId
                         )
                     } else {
-                        foundFiles.forEach {
-                            launch {
-                                send(
-                                    message.chat.id,
-                                    Pair(it, fileList[it]
-                                        ?: throw IllegalArgumentException("Failed to find corresponding hash for $it")),
-                                    message.messageId
-                                )
+                        foundFiles.shuffled().take(15).forEach { file ->
+                            val hash = fileList[file]
+                            if (hash != null) {
+                                launch { send(message.chat.id, Pair(file, hash), message.messageId) }
                             }
                         }
                     }
